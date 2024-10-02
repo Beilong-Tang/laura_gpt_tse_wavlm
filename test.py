@@ -53,9 +53,6 @@ def main(rank, args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config_path", required=True, type=str)
-    parser.add_argument("--log", type=str, required=True)
-    parser.add_argument("--ckpt_path", type=str, required=True)
     parser.add_argument(
         "--dist-backend", default="nccl", type=str, help="distributed backend"
     )
@@ -63,6 +60,6 @@ if __name__ == "__main__":
         "--ngpus", default=4, type=int, help="Number of gpus"
     )
     args = parser.parse_args()
-    os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in config_base.gpus])
+    os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in range(args.ngpus)])
     mp.spawn(main, args=(args,), nprocs=len(args.ngpus), join=True)
     pass
