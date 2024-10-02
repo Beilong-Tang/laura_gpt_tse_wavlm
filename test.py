@@ -7,7 +7,8 @@ import torch.multiprocessing as mp
 import torch.distributed as dist
 import torch.nn as nn
 import torch
-
+import logging
+import datetime
 
 class Model(nn.Module):
 
@@ -31,8 +32,26 @@ def setup(rank, world_size, backend, port=12355):
 def cleanup():
     dist.destroy_process_group()
 
+def setup_logger(args):
+    now = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    log_dir = args.log
+    print(f"logging dir: {log_dir}")
+    os.makedirs(log_dir, exist_ok=True)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s,%(name)s,%(levelname)s,%(message)s",
+        handlers=[logging.FileHandler(f"{log_dir}/{now}.log"), logging.StreamHandler()],
+    )
+    logger = logging.getLogger()
+    logger.info("logger initialized")
+    return logger
+
 
 def main(rank, args):
+    args.log="."
+    logger = setup_logger(args)
+    logger.info("logging initialized succesully")
+
     print(f"rank {rank} of world_size {args.ngpus} started...")
     # setup_seed(config_base.seed, rank)
     setup(rank, args.ngpus, args.dist_backend)
@@ -48,6 +67,7 @@ def main(rank, args):
         loss.backward()
         if ct % 10 == 0:
             print(f"loss on rank {rank} is {loss}")
+            logger.info(f"loss on rank {rank} is {loss}")
         ct+=1
     
 
