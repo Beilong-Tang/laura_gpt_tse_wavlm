@@ -2,13 +2,11 @@ import argparse
 import os
 
 from torch.nn.parallel import DistributedDataParallel as DDP
-from torch.utils.data.distributed import DistributedSampler
 import torch.multiprocessing as mp
 import torch.distributed as dist
 import torch.nn as nn
 import torch
-import logging
-import datetime
+from utils import setup_logger
 
 class Model(nn.Module):
 
@@ -31,20 +29,6 @@ def setup(rank, world_size, backend, port=12355):
 
 def cleanup():
     dist.destroy_process_group()
-
-def setup_logger(args):
-    now = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    log_dir = args.log
-    print(f"logging dir: {log_dir}")
-    os.makedirs(log_dir, exist_ok=True)
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s,%(name)s,%(levelname)s,%(message)s",
-        handlers=[logging.FileHandler(f"{log_dir}/{now}.log"), logging.StreamHandler()],
-    )
-    logger = logging.getLogger()
-    logger.info("logger initialized")
-    return logger
 
 
 def main(rank, args):
