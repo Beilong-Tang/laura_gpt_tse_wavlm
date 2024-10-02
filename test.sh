@@ -4,6 +4,7 @@
 #SBATCH -N 1
 #SBATCH --gres=dcu:4
 #SBATCH -p kshdnormal02
+#SBATCH -o log.out
 #SBATCH -e log.err
 
 export ROCBLAS_TENSILE_LIBPATH=/public/software/compiler/rocm/dtk-23.10/lib/rocblas/library_dcu2
