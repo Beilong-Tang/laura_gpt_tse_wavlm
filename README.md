@@ -1,6 +1,6 @@
 # LauraGPT
 
-:warning: This repository is under construction
+:heavy_exclamation_mark: This repository is under construction
 
 Unofficial Implementation for [LauraGPT](https://arxiv.org/abs/2310.04673)
 
