@@ -33,9 +33,9 @@ def cleanup():
 
 
 def main(rank, args):
-    print(f"rank {rank} of world_size {args.ngpu} started...")
+    print(f"rank {rank} of world_size {args.ngpus} started...")
     # setup_seed(config_base.seed, rank)
-    setup(rank, args.ngpu, args.dist_backend)
+    setup(rank, args.ngpus, args.dist_backend)
     model = Model()
     model.to(rank)
     model = DDP(model, device_ids=[rank])
