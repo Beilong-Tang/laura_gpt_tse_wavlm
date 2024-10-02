@@ -1,6 +1,7 @@
 import datetime
 import os
 import logging
+from argparse import Namespace
 
 def setup_logger(args):
     now = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
@@ -15,3 +16,15 @@ def setup_logger(args):
     logger = logging.getLogger()
     logger.info("logger initialized")
     return logger
+
+
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+    def __getattribute__(self, name: str):
+        try:
+            return super().__getattribute__(name)
+        except AttributeError:
+            return None
