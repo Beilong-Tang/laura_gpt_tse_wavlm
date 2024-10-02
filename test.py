@@ -61,5 +61,5 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in range(args.ngpus)])
-    mp.spawn(main, args=(args,), nprocs=len(args.ngpus), join=True)
+    mp.spawn(main, args=(args,), nprocs=args.ngpus, join=True)
     pass
