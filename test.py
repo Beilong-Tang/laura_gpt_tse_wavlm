@@ -48,7 +48,6 @@ def setup_logger(args):
 
 
 def main(rank, args):
-    args.log="."
     logger = setup_logger(args)
     logger.info("logging initialized succesully")
 
@@ -78,6 +77,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--ngpus", default=4, type=int, help="Number of gpus"
+    )
+    parser.add_argument(
+        "--log", default="./log", type=str, help="Output of the log"
     )
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in range(args.ngpus)])
