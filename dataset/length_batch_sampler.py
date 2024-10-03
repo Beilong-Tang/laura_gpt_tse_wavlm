@@ -56,7 +56,7 @@ class LengthBatchSampler:
         keys = sorted(first_utt2shape, key=lambda k: first_utt2shape[k][0])
         if len(keys) == 0:
             raise RuntimeError(f"0 lines found: {shape_files[0]}")
-        
+
         # Decide batch-sizes
         batch_sizes = []
         current_batch_keys = []

@@ -6,7 +6,9 @@ import torch.multiprocessing as mp
 import torch.distributed as dist
 import torch.nn as nn
 import torch
+import yaml
 from utils import setup_logger
+
 
 class Model(nn.Module):
 
@@ -35,6 +37,8 @@ def cleanup():
 def main(rank, args):
     logger = setup_logger(args)
     logger.info("logging initialized succesully")
+    print(args)
+
     print(f"rank {rank} of world_size {len(args.gpus)} started...")
     setup(rank, len(args.gpus), args.dist_backend)
     args.gpu = args.gpus[rank]
@@ -64,8 +68,13 @@ if __name__ == "__main__":
     )
     parser.add_argument("--gpus", default="0,1,2,3", type="str", help="gpus")
     parser.add_argument("--log", default="./log", type=str, help="Output of the log")
-    parser.add_argument("--config", type=str)
+    parser.add_argument("--config", type=str, default=None, help="path to yaml config")
     args = parser.parse_args()
+    if args.config is not None:
+        with open(args.config, "r") as file:
+            config = yaml.safe_load(file)
+        for k, v in config:
+            args.__setattr__(k, v)
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
     args.gpus = [int(i) for i in args.gpus.split(",")]
     mp.spawn(main, args=(args,), nprocs=len(args.gpus), join=True)
