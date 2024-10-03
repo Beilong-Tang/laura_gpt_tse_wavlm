@@ -2,8 +2,8 @@ init_param: ["./exp/audio_codec-encodec-zh_en-general-16k-nq32ds640-pytorch/mode
 train_shape_file: ["/public/home/qinxy/bltang/LLM_TTS/egs/exp/libritts_states/dev/codec_shape"]
 valid_shape_file: ["/public/home/qinxy/bltang/LLM_TTS/egs/exp/libritts_states/train/codec_shape"]
 
-
-token_list: "data/zh_en_phoneme_token.list"
+grad_clip: 5
+token_list: "/public/home/qinxy/bltang/FunCodec/egs/LibriTTS/text2speech_laura/data/en_phoneme_token.list"
 
 # input related
 input_size: 1536

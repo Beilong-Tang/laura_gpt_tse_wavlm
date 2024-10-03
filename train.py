@@ -7,7 +7,6 @@ import torch.distributed as dist
 import torch.nn as nn
 import torch
 from utils import setup_logger
-from funcodec.tasks.abs_task import AbsTask
 
 class Model(nn.Module):
 
@@ -36,14 +35,14 @@ def cleanup():
 def main(rank, args):
     logger = setup_logger(args)
     logger.info("logging initialized succesully")
-
-    print(f"rank {rank} of world_size {args.ngpus} started...")
-    # setup_seed(config_base.seed, rank)
-    setup(rank, args.ngpus, args.dist_backend)
+    print(f"rank {rank} of world_size {len(args.gpus)} started...")
+    setup(rank, len(args.gpus), args.dist_backend)
+    args.gpu = args.gpus[rank]
+    torch.cuda.set_device(args.gpu)
     model = Model()
-    model.to(rank)
-    model = DDP(model, device_ids=[rank])
-    
+    model.cuda()
+    model = DDP(model, device_ids=[args.gpu])
+
     ct = 0
     while True:
         data = torch.randn(1, 4)
@@ -61,9 +60,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dist-backend", default="nccl", type=str, help="distributed backend"
     )
-    parser.add_argument("--ngpus", default=4, type=int, help="Number of gpus")
+    parser.add_argument("--gpus", default="0,1,2,3", type="str", help="gpus")
     parser.add_argument("--log", default="./log", type=str, help="Output of the log")
     args = parser.parse_args()
-    os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in range(args.ngpus)])
-    mp.spawn(main, args=(args,), nprocs=args.ngpus, join=True)
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
+    args.gpus = [int(i) for i in args.gpus.split(",")]
+    mp.spawn(main, args=(args,), nprocs=len(args.gpus), join=True)
     pass
