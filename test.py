@@ -8,16 +8,18 @@ import torch.nn as nn
 import torch
 from utils import setup_logger
 
+
 class Model(nn.Module):
 
     def __init__(self):
         super().__init__()
         self.model = nn.Linear(4, 1)
-    
-    def forward(self,x):
+
+    def forward(self, x):
         """x:[B,T]"""
         output = self.model(x)
         return output
+
 
 ## ddp process
 def setup(rank, world_size, backend, port=12355):
@@ -44,27 +46,23 @@ def main(rank, args):
 
     ct = 0
     while True:
-        data = torch.randn(1,4)
+        data = torch.randn(1, 4)
         data = data.to(rank)
         loss = model(data)
         loss.backward()
         if ct % 10 == 0:
             print(f"loss on rank {rank} is {loss}")
             logger.info(f"loss on rank {rank} is {loss}")
-        ct+=1
-    
+        ct += 1
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--dist-backend", default="nccl", type=str, help="distributed backend"
     )
-    parser.add_argument(
-        "--ngpus", default=4, type=int, help="Number of gpus"
-    )
-    parser.add_argument(
-        "--log", default="./log", type=str, help="Output of the log"
-    )
+    parser.add_argument("--ngpus", default=4, type=int, help="Number of gpus")
+    parser.add_argument("--log", default="./log", type=str, help="Output of the log")
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in range(args.ngpus)])
     mp.spawn(main, args=(args,), nprocs=args.ngpus, join=True)

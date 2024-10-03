@@ -3,6 +3,7 @@ import os
 import logging
 from argparse import Namespace
 
+
 def setup_logger(args):
     now = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     log_dir = args.log
