@@ -39,6 +39,8 @@ def main(rank, args):
     setup(rank, len(args.gpus), args.dist_backend)
     args.gpu = args.gpus[rank]
     torch.cuda.set_device(args.gpu)
+
+    ## load model
     model = Model()
     model.cuda()
     model = DDP(model, device_ids=[args.gpu])
@@ -62,6 +64,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--gpus", default="0,1,2,3", type="str", help="gpus")
     parser.add_argument("--log", default="./log", type=str, help="Output of the log")
+    parser.add_argument("--config", type=str)
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
     args.gpus = [int(i) for i in args.gpus.split(",")]
