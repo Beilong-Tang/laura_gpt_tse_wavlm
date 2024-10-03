@@ -73,7 +73,7 @@ if __name__ == "__main__":
     if args.config is not None:
         with open(args.config, "r") as file:
             config = yaml.safe_load(file)
-        for k, v in config:
+        for k, v in config.items():
             args.__setattr__(k, v)
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
     args.gpus = [int(i) for i in args.gpus.split(",")]
