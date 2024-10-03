@@ -18,4 +18,4 @@ module load mpi/hpcx/2.7.4/gcc-7.3.1
 module load compiler/rocm/dtk-23.10
 
 
-python -u test.py --config config/conf.yaml
+python -u train.py --config config/conf.yaml
