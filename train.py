@@ -37,7 +37,7 @@ def cleanup():
 def main(rank, args):
     logger = setup_logger(args)
     logger.info("logging initialized succesully")
-    print(args)
+    logger.info(args)
 
     print(f"rank {rank} of world_size {len(args.gpus)} started...")
     setup(rank, len(args.gpus), args.dist_backend)
