@@ -4,12 +4,7 @@ from typing import Dict
 from typing import Tuple
 from typing import Union
 
-import os
-import sys
-
-sys.path.append(os.getcwd())
-
-from dataset.utils.read_text import load_num_sequence_text
+from .utils.read_text import load_num_sequence_text
 
 
 class LengthBatchSampler:

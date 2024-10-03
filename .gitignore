@@ -2,3 +2,4 @@
 *.txt
 *.err
 __pycache__/
+*test*
