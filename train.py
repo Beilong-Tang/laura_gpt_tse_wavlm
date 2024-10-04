@@ -1,13 +1,18 @@
 import argparse
 import os
-
+import random 
+import yaml
+import numpy as np 
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.multiprocessing as mp
 import torch.distributed as dist
 import torch.nn as nn
 import torch
-import yaml
+
+from funcodec.tasks.text2audio_generation import Text2AudioGenTask
+
 from utils import setup_logger
+
 
 
 class Model(nn.Module):
@@ -20,6 +25,16 @@ class Model(nn.Module):
         """x:[B,T]"""
         output = self.model(x)
         return output
+
+def setup_seed(seed, rank):
+    SEED = int(seed) + rank
+    random.seed(SEED)
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+    torch.cuda.manual_seed_all(SEED)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    return SEED
 
 
 ## ddp process
@@ -35,19 +50,22 @@ def cleanup():
 
 
 def main(rank, args):
-    logger = setup_logger(args)
-    logger.info("logging initialized succesully")
-    logger.info(args)
-
-    print(f"rank {rank} of world_size {len(args.gpus)} started...")
+    l = setup_logger(args)
+    l.info("logging initialized succesully")
+    l.info(args)
+    l.info(f"rank {rank} of world_size {len(args.gpus)} started...")
     setup(rank, len(args.gpus), args.dist_backend)
     args.gpu = args.gpus[rank]
     torch.cuda.set_device(args.gpu)
+    torch.cuda.empty_cache()
+    setup_seed(args.seed, rank)
 
-    ## load model
-    model = Model()
+    l.info("setup model")
+    ## load laura gpt model
+    model:nn.Module = Text2AudioGenTask.build_model(args)
     model.cuda()
     model = DDP(model, device_ids=[args.gpu])
+    l.info(f"model {model} is intialized")
 
     ct = 0
     while True:
@@ -57,7 +75,7 @@ def main(rank, args):
         loss.backward()
         if ct % 10 == 0:
             print(f"loss on rank {rank} is {loss}")
-            logger.info(f"loss on rank {rank} is {loss}")
+            l.info(f"loss on rank {rank} is {loss}")
         ct += 1
 
 
