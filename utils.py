@@ -2,12 +2,14 @@ import datetime
 import os
 import logging
 
+from argparse import Namespace
+
 
 def init(module, config, *args, **kwargs):
     return getattr(module, config["type"])(*args, **kwargs, **config["args"])
 
 
-def setup_logger(args):
+def setup_logger(args: Namespace, rank: int):
     now = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     log_dir = args.log
     print(f"logging dir: {log_dir}")
@@ -19,7 +21,7 @@ def setup_logger(args):
     )
     logger = logging.getLogger()
     logger.info("logger initialized")
-    return logger
+    return Logger(logger, rank)
 
 
 class Logger:

@@ -52,7 +52,7 @@ def cleanup():
 
 
 def main(rank, args):
-    l = setup_logger(args)
+    l = setup_logger(args, rank)
     l.info("logging initialized succesully")
     l.info(args)
     l.info(f"rank {rank} of world_size {len(args.gpus)} started...")
@@ -61,7 +61,6 @@ def main(rank, args):
     torch.cuda.set_device(args.gpu)
     torch.cuda.empty_cache()
     setup_seed(args.seed, rank)
-
     l.info("setup model")
     ## load laura gpt model
     model: nn.Module = Text2AudioGenTask.build_model(args)
