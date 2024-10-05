@@ -126,5 +126,6 @@ if __name__ == "__main__":
             args.__setattr__(k, v)
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
     args.gpus = [int(i) for i in args.gpus.split(",")]
+    args.ngpu = len(args.gpus)
     mp.spawn(main, args=(args,), nprocs=len(args.gpus), join=True)
     pass

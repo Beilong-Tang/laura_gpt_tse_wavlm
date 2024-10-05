@@ -108,6 +108,7 @@ num_workers: 8
 max_cache_size: 0.0
 max_cache_fd: 32
 train_dtype: float32
+## Add for argument type checking
 allow_variable_data_keys: false
 drop_last: false
 fold_length: []
