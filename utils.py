@@ -22,6 +22,34 @@ def setup_logger(args):
     return logger
 
 
+class Logger:
+    def __init__(self, log: logging.Logger, rank: int):
+        self.log = log
+        self.rank = rank
+
+    def info(self, msg: str):
+        if self.rank == 0:
+            self.log.info(msg)
+
+    def debug(self, msg: str):
+        if self.rank == 0:
+            self.log.debug(msg)
+        pass
+
+    def warning(self, msg: str):
+        self.log.warning(f"rank {self.rank} - {msg}")
+        pass
+
+    def error(self, msg: str):
+        self.log.error(f"rank {self.rank} - {msg}")
+        pass
+
+    def critical(self, msg: str):
+        self.log.critical(f"rank {self.rank} - {msg}")
+
+        pass
+
+
 class AttrDict(dict):
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
