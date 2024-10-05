@@ -1,6 +1,7 @@
 import argparse
 import os
 import random
+import torch.distributed
 import yaml
 import numpy as np
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -9,9 +10,12 @@ import torch.distributed as dist
 import torch.nn as nn
 import torch
 
+from _funcodec import init_distributed_option
+
 from funcodec.tasks.text2audio_generation import Text2AudioGenTask
 from funcodec.schedulers.warmup_lr import WarmupLR
 from funcodec.torch_utils.load_pretrained_model import load_pretrained_model
+from funcodec.train.distributed_utils import DistributedOption
 
 from utils import setup_logger
 from utils import init
@@ -66,15 +70,6 @@ def main(rank, args):
     ## load laura gpt model
     model: nn.Module = Text2AudioGenTask.build_model(args)
     model.cuda()
-    model = DDP(model, device_ids=[args.gpu])
-    l.info(f"model {model} is intialized")
-    ## optimizer
-    optim = init(torch.optim, args.optim, model.parameters())
-    ## scheduler
-    assert args.scheduler == "warmuplr"
-    scheduler = WarmupLR(optim, **args.scheduler_conf)
-    l.info(f"scheduler {scheduler} and optim {optim} is initialized")
-    ## load pretrained model
     for p in args.init_param:
         l.info(f"Loading pretrained params from {p}")
         load_pretrained_model(
@@ -85,6 +80,20 @@ def main(rank, args):
             #   in PyTorch<=1.4
             map_location=f"cuda:{torch.cuda.current_device()}",
         )
+    model = DDP(model, device_ids=[args.gpu])
+    l.info(f"model {model} is intialized")
+    ## optimizer
+    optim = init(torch.optim, args.optim, model.parameters())
+    ## scheduler
+    assert args.scheduler == "warmuplr"
+    scheduler = WarmupLR(optim, **args.scheduler_conf)
+    l.info(f"scheduler {scheduler} and optim {optim} is initialized")
+    ## setup dataloader
+    ### Initialize distributed Option to ensure compability
+    distributed_option = init_distributed_option(rank)
+
+
+
     
 
     ct = 0

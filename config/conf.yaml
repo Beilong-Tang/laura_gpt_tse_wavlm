@@ -1,6 +1,30 @@
 init_param: ["./exp/audio_codec-encodec-zh_en-general-16k-nq32ds640-pytorch/model.pth:quantizer.rq.model:quantizer_codebook"]
 train_shape_file: ["/public/home/qinxy/bltang/LLM_TTS/egs/exp/libritts_states/dev/codec_shape"]
 valid_shape_file: ["/public/home/qinxy/bltang/LLM_TTS/egs/exp/libritts_states/train/codec_shape"]
+train_data_path_and_name_and_type: [
+    [
+        "./dump/WenetSpeech4TTS/train/phoneme_new",
+        "text",
+        "text"
+    ],
+    [
+        "./dump/WenetSpeech4TTS/train/codec_token.scp",
+        "codec",
+        "kaldi_ark"
+    ]
+]
+valid_data_path_and_name_and_type: [
+    [
+        "./dump/WenetSpeech4TTS/dev/phoneme_new",
+        "text",
+        "text"
+    ],
+    [
+        "./dump/WenetSpeech4TTS/dev/codec_token.scp",
+        "codec",
+        "kaldi_ark"
+    ]
+]
 
 grad_clip: 5
 token_list: "/public/home/qinxy/bltang/FunCodec/egs/LibriTTS/text2speech_laura/data/en_phoneme_token.list"
@@ -76,10 +100,13 @@ model_conf:
         codec_groups: 1
 
 batch_type: length
-batch_bins: 10240
+batch_bins: 40960
 sort_in_batch: descending
 sort_batch: descending
 num_workers: 8
+max_cache_size: 0.0
+max_cache_fd: 32
+
 
 optim:
     type: Adam
