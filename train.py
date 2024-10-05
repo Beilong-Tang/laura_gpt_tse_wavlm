@@ -74,7 +74,17 @@ def main(rank, args):
     assert args.scheduler == "warmuplr"
     scheduler = WarmupLR(optim, **args.scheduler_conf)
     l.info(f"scheduler {scheduler} and optim {optim} is initialized")
-
+    ## load pretrained model
+    for p in args.init_param:
+        l.info(f"Loading pretrained params from {p}")
+        load_pretrained_model(
+            model=model,
+            init_param=p,
+            ignore_init_mismatch=True,
+            # NOTE(kamo): "cuda" for torch.load always indicates cuda:0
+            #   in PyTorch<=1.4
+            map_location=f"cuda:{torch.cuda.current_device()}",
+        )
 
     ct = 0
     while True:
