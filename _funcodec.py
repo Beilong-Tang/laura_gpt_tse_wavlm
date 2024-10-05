@@ -15,4 +15,3 @@ def init_sequence_iter_factory(args, rank, mode) -> SequenceIterFactory:
     distributed_option.dist_world_size = torch.distributed.get_world_size()
     iter_option = Text2AudioGenTask.build_iter_options(args, distributed_option, mode)
     return Text2AudioGenTask.build_sequence_iter_factory(args, iter_option, mode)
-

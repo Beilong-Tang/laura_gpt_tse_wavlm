@@ -10,14 +10,15 @@ import torch.distributed as dist
 import torch.nn as nn
 import torch
 
-from _funcodec import init_sequence_iter_factory
-
 from funcodec.tasks.text2audio_generation import Text2AudioGenTask
 from funcodec.schedulers.warmup_lr import WarmupLR
 from funcodec.torch_utils.load_pretrained_model import load_pretrained_model
 
+from _funcodec import init_sequence_iter_factory
+
 from utils import setup_logger
 from utils import init
+from utils import AttrDict
 
 
 class Model(nn.Module):
@@ -56,6 +57,7 @@ def cleanup():
 
 
 def main(rank, args):
+    args = AttrDict(vars(args))
     l = setup_logger(args, rank)
     l.info("logging initialized succesully")
     l.info(args)
@@ -95,8 +97,6 @@ def main(rank, args):
     for i, (uttid, data) in enumerate(data):
         l.info(data)
         break
-
-
 
     ct = 0
     while True:
