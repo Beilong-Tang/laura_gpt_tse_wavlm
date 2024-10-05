@@ -2,7 +2,9 @@ import datetime
 import os
 import logging
 
+import argparse
 from argparse import Namespace
+
 
 
 def init(module, config, *args, **kwargs):
@@ -51,11 +53,10 @@ class Logger:
 
         pass
 
-
-class AttrDict(dict):
-    def __init__(self, *args, **kwargs):
-        super(AttrDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self
+ 
+class AttrDict(Namespace):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def __getattribute__(self, name: str):
         try:

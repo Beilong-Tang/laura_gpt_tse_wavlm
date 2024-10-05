@@ -57,7 +57,7 @@ def cleanup():
 
 
 def main(rank, args):
-    args = AttrDict(vars(args))
+    args = AttrDict(**vars(args))
     l = setup_logger(args, rank)
     l.info("logging initialized succesully")
     l.info(args)
