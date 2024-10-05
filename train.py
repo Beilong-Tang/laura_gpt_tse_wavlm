@@ -10,12 +10,11 @@ import torch.distributed as dist
 import torch.nn as nn
 import torch
 
-from _funcodec import init_distributed_option
+from _funcodec import init_sequence_iter_factory
 
 from funcodec.tasks.text2audio_generation import Text2AudioGenTask
 from funcodec.schedulers.warmup_lr import WarmupLR
 from funcodec.torch_utils.load_pretrained_model import load_pretrained_model
-from funcodec.train.distributed_utils import DistributedOption
 
 from utils import setup_logger
 from utils import init
@@ -89,12 +88,15 @@ def main(rank, args):
     scheduler = WarmupLR(optim, **args.scheduler_conf)
     l.info(f"scheduler {scheduler} and optim {optim} is initialized")
     ## setup dataloader
-    ### Initialize distributed Option to ensure compability
-    distributed_option = init_distributed_option(rank)
+    ### Initialize distributed Option and Sequence
+    train_iter = init_sequence_iter_factory(args, rank, "train")
+    val_iter = init_sequence_iter_factory(args, rank, "valid")
+    data = train_iter.build_iter(0)
+    for i, (uttid, data) in enumerate(data):
+        l.info(data)
+        break
 
 
-
-    
 
     ct = 0
     while True:
