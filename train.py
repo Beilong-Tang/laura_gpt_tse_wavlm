@@ -96,6 +96,7 @@ def main(rank, args):
     data = train_iter.build_iter(0)
     for i, (uttid, data) in enumerate(data):
         l.info(data)
+        l.info(len(data['text']))
         if rank == 0:
             torch.save(data, "data.pt")
         break
