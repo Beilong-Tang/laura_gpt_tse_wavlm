@@ -1,26 +1,26 @@
-init_param: ["./exp/audio_codec-encodec-zh_en-general-16k-nq32ds640-pytorch/model.pth:quantizer.rq.model:quantizer_codebook"]
+init_param: ["/public/home/qinxy/bltang/LLM_TTS/egs/exp/audio_codec-encodec-zh_en-general-16k-nq32ds640-pytorch/model.pth:quantizer.rq.model:quantizer_codebook"]
 train_shape_file: ["/public/home/qinxy/bltang/LLM_TTS/egs/exp/libritts_states/dev/codec_shape"]
 valid_shape_file: ["/public/home/qinxy/bltang/LLM_TTS/egs/exp/libritts_states/train/codec_shape"]
 train_data_path_and_name_and_type: [
     [
-        "./dump/WenetSpeech4TTS/train/phoneme_new",
+        "/public/home/qinxy/bltang/LLM_TTS/egs/dump/libritts/train/phoneme",
         "text",
         "text"
     ],
     [
-        "./dump/WenetSpeech4TTS/train/codec_token.scp",
+        "/public/home/qinxy/bltang/LLM_TTS/egs/dump/libritts/train/codec_token.scp",
         "codec",
         "kaldi_ark"
     ]
 ]
 valid_data_path_and_name_and_type: [
     [
-        "./dump/WenetSpeech4TTS/dev/phoneme_new",
+        "/public/home/qinxy/bltang/LLM_TTS/egs/dump/libritts/dev/phoneme",
         "text",
         "text"
     ],
     [
-        "./dump/WenetSpeech4TTS/dev/codec_token.scp",
+        "/public/home/qinxy/bltang/LLM_TTS/egs/dump/libritts/dev/codec_token.scp",
         "codec",
         "kaldi_ark"
     ]
