@@ -90,7 +90,7 @@ def main(rank, args):
     scheduler = WarmupLR(optim, **args.scheduler_conf)
     l.info(f"scheduler {scheduler} and optim {optim} is initialized")
     ## setup dataloader
-    ### Initialize distributed Option and Sequence
+    ### Initialized iter factory
     train_iter = init_sequence_iter_factory(args, rank, "train")
     val_iter = init_sequence_iter_factory(args, rank, "valid")
     data = train_iter.build_iter(0)
