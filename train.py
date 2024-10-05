@@ -72,7 +72,7 @@ def main(rank, args):
     optim = init(torch.optim, args.optim, model.parameters())
     ## scheduler
     assert args.scheduler == "warmuplr"
-    scheduler = WarmupLR(optim, **args.schduler_conf)
+    scheduler = WarmupLR(optim, **args.scheduler_conf)
     l.info(f"scheduler {scheduler} and optim {optim} is initialized")
 
     ct = 0
