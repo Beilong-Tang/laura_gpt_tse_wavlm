@@ -1,7 +1,10 @@
 import datetime
 import os
 import logging
-from argparse import Namespace
+
+
+def init(module, config, *args, **kwargs):
+    return getattr(module, config["type"])(*args, **kwargs, **config["args"])
 
 
 def setup_logger(args):

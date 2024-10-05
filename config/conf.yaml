@@ -80,10 +80,11 @@ sort_in_batch: descending
 sort_batch: descending
 num_workers: 8
 
-# optimization related
-optim: adam
-optim_conf:
-    lr: 0.001
+optim:
+    type: Adam
+    args:
+        lr: 1e-3
+
 scheduler: warmuplr
 scheduler_conf:
     warmup_steps: 10000

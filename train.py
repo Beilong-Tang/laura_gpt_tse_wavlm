@@ -1,8 +1,8 @@
 import argparse
 import os
-import random 
+import random
 import yaml
-import numpy as np 
+import numpy as np
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.multiprocessing as mp
 import torch.distributed as dist
@@ -12,7 +12,7 @@ import torch
 from funcodec.tasks.text2audio_generation import Text2AudioGenTask
 
 from utils import setup_logger
-
+from utils import init
 
 
 class Model(nn.Module):
@@ -25,6 +25,7 @@ class Model(nn.Module):
         """x:[B,T]"""
         output = self.model(x)
         return output
+
 
 def setup_seed(seed, rank):
     SEED = int(seed) + rank
@@ -62,10 +63,14 @@ def main(rank, args):
 
     l.info("setup model")
     ## load laura gpt model
-    model:nn.Module = Text2AudioGenTask.build_model(args)
+    model: nn.Module = Text2AudioGenTask.build_model(args)
     model.cuda()
     model = DDP(model, device_ids=[args.gpu])
     l.info(f"model {model} is intialized")
+    ## optimizer
+    optim = init(torch.optim, args.optim, model.parameters())
+    ## scheduler
+    
 
     ct = 0
     while True:
