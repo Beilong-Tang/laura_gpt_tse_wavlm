@@ -109,6 +109,7 @@ max_cache_size: 0.0
 max_cache_fd: 32
 train_dtype: float32
 allow_variable_data_keys: false
+drop_last: false
 
 optim:
     type: Adam
