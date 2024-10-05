@@ -4,6 +4,7 @@ valid_shape_file: ["/public/home/qinxy/bltang/LLM_TTS/egs/exp/libritts_states/tr
 
 grad_clip: 5
 token_list: "/public/home/qinxy/bltang/FunCodec/egs/LibriTTS/text2speech_laura/data/en_phoneme_token.list"
+token_type: "word"
 seed: 1234
 init: null
 

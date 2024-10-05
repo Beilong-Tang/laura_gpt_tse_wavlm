@@ -85,6 +85,7 @@ def main(rank, args):
             #   in PyTorch<=1.4
             map_location=f"cuda:{torch.cuda.current_device()}",
         )
+    
 
     ct = 0
     while True:
