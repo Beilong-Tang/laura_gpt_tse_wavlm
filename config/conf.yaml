@@ -83,7 +83,7 @@ num_workers: 8
 optim:
     type: Adam
     args:
-        lr: 1e-3
+        lr: 1.0e-3
 
 scheduler: warmuplr
 scheduler_conf:

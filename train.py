@@ -10,6 +10,7 @@ import torch.nn as nn
 import torch
 
 from funcodec.tasks.text2audio_generation import Text2AudioGenTask
+from funcodec.schedulers.warmup_lr import WarmupLR
 
 from utils import setup_logger
 from utils import init
@@ -70,7 +71,9 @@ def main(rank, args):
     ## optimizer
     optim = init(torch.optim, args.optim, model.parameters())
     ## scheduler
-    
+    assert args.scheduler == "warmuplr"
+    scheduler = WarmupLR(optim, **args.schduler_conf)
+    l.info(f"scheduler {scheduler} and optim {optim} is initialized")
 
     ct = 0
     while True:
