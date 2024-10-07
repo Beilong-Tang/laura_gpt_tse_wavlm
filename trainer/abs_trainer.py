@@ -50,7 +50,6 @@ class Trainer:
         self.step = 0
         self.optim = optim
         self.rank = rank
-        print(f"device is {self.device} for rank {rank}")
         self.log_interval = config.log_interval
         self.logger = logger
         self.max_ckpt = config.max_ckpt
