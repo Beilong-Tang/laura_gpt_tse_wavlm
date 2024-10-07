@@ -64,6 +64,10 @@ def load_ckpt(ckpt_dir: str):
                     if false: return None
         if None: return the latest epoch ckpt path in ckpt_dir or None if there is no ckpt available
     """
+    if not os.path.exists(ckpt_dir):
+        os.makedirs(ckpt_dir, exist_ok=True)
+        return None
+
     files = sorted(
         [f for f in os.listdir(ckpt_dir) if (f.endswith(".pth") and "best" not in f)],
         key=lambda x: int(re.search(r"[0-9]+", x).group()),

@@ -22,7 +22,6 @@ from utils import init
 from utils import AttrDict
 
 
-
 def setup_seed(seed, rank):
     SEED = int(seed) + rank
     random.seed(SEED)
@@ -83,6 +82,10 @@ def main(rank, args):
     ### Initialized iter factory
     train_iter = init_sequence_iter_factory(args, rank, "train")
     val_iter = init_sequence_iter_factory(args, rank, "valid")
+
+    ## ckpt_dr
+    trainer = Trainer(model, train_iter, val_iter, optim, scheduler, config=args)
+
     data = train_iter.build_iter(0)
     for i, (uttid, data) in enumerate(data):
         l.info(data)
