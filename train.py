@@ -83,27 +83,22 @@ def main(rank, args):
     train_iter = init_sequence_iter_factory(args, rank, "train")
     val_iter = init_sequence_iter_factory(args, rank, "valid")
 
-    ## ckpt_dr
-    trainer = Trainer(model, train_iter, val_iter, optim, scheduler, config=args)
+    ## ckpt_dir
+    ckpt_dir = os.path.basename(args.config).replace(".yaml", "")
 
-    data = train_iter.build_iter(0)
-    for i, (uttid, data) in enumerate(data):
-        l.info(data)
-        l.info(len(data["text"]))
-        if rank == 0:
-            torch.save(data, "data.pt")
-        break
-
-    ct = 0
-    while True:
-        data = torch.randn(1, 4)
-        data = data.to(rank)
-        loss = model(data)
-        loss.backward()
-        if ct % 10 == 0:
-            print(f"loss on rank {rank} is {loss}")
-            l.info(f"loss on rank {rank} is {loss}")
-        ct += 1
+    trainer = Trainer(
+        model,
+        train_iter,
+        val_iter,
+        optim,
+        scheduler,
+        config=args,
+        ckpt_dir=f"./ckpt/{ckpt_dir}",
+        rank=rank,
+        logger=l,
+    )
+    l.info("starting training!")
+    trainer.train()
 
 
 if __name__ == "__main__":

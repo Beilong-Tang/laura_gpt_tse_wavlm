@@ -39,7 +39,6 @@ class Trainer:
         scheduler,
         config,
         ckpt_dir,
-        device,
         rank,
         logger: Logger,
     ):
@@ -50,7 +49,6 @@ class Trainer:
         self.epoch_start = 0
         self.step = 0
         self.optim = optim
-        self.device = device
         self.rank = rank
         print(f"device is {self.device} for rank {rank}")
         self.log_interval = config.log_interval
