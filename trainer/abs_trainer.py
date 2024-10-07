@@ -156,9 +156,8 @@ class Trainer:
                 self._log(f"tr, {dict_to_str(res)}")
             self.step += 1
 
-    def _eval(self, cv_data: SequenceIterFactory, epoch):
+    def _eval(self, cv_data, epoch):
         self.model.eval()
-        cv_data = cv_data.build_iter(epoch, shuffle=False)
         result = None
         if self.rank == 0:
             print(f"evaluating on cv_data of len {len(cv_data)* cv_data.batch_size}")

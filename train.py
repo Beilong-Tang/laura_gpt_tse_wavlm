@@ -22,17 +22,6 @@ from utils import init
 from utils import AttrDict
 
 
-class Model(nn.Module):
-
-    def __init__(self):
-        super().__init__()
-        self.model = nn.Linear(4, 1)
-
-    def forward(self, x):
-        """x:[B,T]"""
-        output = self.model(x)
-        return output
-
 
 def setup_seed(seed, rank):
     SEED = int(seed) + rank
