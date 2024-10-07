@@ -85,6 +85,7 @@ class Trainer:
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)
         optim.step()
+        torch.cuda.empty_cache()
         if if_log:
             return stats
         return None
