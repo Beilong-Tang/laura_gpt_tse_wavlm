@@ -179,7 +179,7 @@ class Trainer:
         return result[self.best_field]
 
     def train(self):
-        for epoch in range(self.epoch_start, self.config["epoch"]):
+        for epoch in range(self.epoch_start, self.config.epoch):
             self._log(f"...epoch {epoch}...")
             tr_data = self.tr_data.build_iter(epoch)
             cv_data = self.cv_data.build_iter(epoch, shuffle=False)
