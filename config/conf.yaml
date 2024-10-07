@@ -127,18 +127,10 @@ best_field: loss
 best_save_type: descend
 max_ckpt: 1
 log_interval: 5
+epoch: 50
+
 # training process
 # num_iters_per_epoch: 10000
-accum_grad: 1
 grad_clip: 5
-max_epoch: 50
-val_scheduler_criterion:
-    - valid
-    - loss
-best_model_criterion:
--   - valid
-    - loss
-    - min
-
 
   

@@ -57,6 +57,7 @@ class Trainer:
         self.best_field = config.best_field
         self.best_value = None
         self.best_save_type = config.best_save_type
+        self.grad_clip = config.grad_clip
         ###
         self.ckpt_path = load_ckpt(ckpt_dir)
         self.scheduler = scheduler
@@ -83,6 +84,8 @@ class Trainer:
             _data[key] = value.cuda()
         loss, stats, weight = self.model(**_data)
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)
+        optim.step()
         if if_log:
             return stats
         return None
