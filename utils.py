@@ -5,7 +5,6 @@ import logging
 from argparse import Namespace
 
 
-
 def init(module, config, *args, **kwargs):
     return getattr(module, config["type"])(*args, **kwargs, **config["args"])
 
@@ -52,7 +51,7 @@ class Logger:
 
         pass
 
- 
+
 class AttrDict(Namespace):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

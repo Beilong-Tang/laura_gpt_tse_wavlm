@@ -1,14 +1,14 @@
 import argparse
 import os
 import random
-import torch.distributed
 import yaml
 import numpy as np
-from torch.nn.parallel import DistributedDataParallel as DDP
+
+import torch
 import torch.multiprocessing as mp
 import torch.distributed as dist
 import torch.nn as nn
-import torch
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 from funcodec.tasks.text2audio_generation import Text2AudioGenTask
 from funcodec.schedulers.warmup_lr import WarmupLR
@@ -16,6 +16,7 @@ from funcodec.torch_utils.load_pretrained_model import load_pretrained_model
 
 from _funcodec import init_sequence_iter_factory
 
+from trainer.abs_trainer import Trainer
 from utils import setup_logger
 from utils import init
 from utils import AttrDict
@@ -96,7 +97,7 @@ def main(rank, args):
     data = train_iter.build_iter(0)
     for i, (uttid, data) in enumerate(data):
         l.info(data)
-        l.info(len(data['text']))
+        l.info(len(data["text"]))
         if rank == 0:
             torch.save(data, "data.pt")
         break

@@ -99,6 +99,7 @@ model_conf:
         bidirectional_inputs: true
         codec_groups: 1
 
+### Training related
 batch_type: length
 batch_bins: 40960
 batch_size: 80 # This does not matter here
@@ -122,6 +123,10 @@ scheduler: warmuplr
 scheduler_conf:
     warmup_steps: 10000
 
+best_field: loss
+best_save_type: descend
+max_ckpt: 1
+log_interval: 5
 # training process
 # num_iters_per_epoch: 10000
 accum_grad: 1
@@ -134,8 +139,6 @@ best_model_criterion:
 -   - valid
     - loss
     - min
-keep_nbest_models: 50
-log_interval: 50
 
 
   

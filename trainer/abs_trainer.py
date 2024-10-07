@@ -4,8 +4,11 @@ import os
 import time
 import torch.distributed as dist
 from torch.utils.data import Subset, DataLoader
+
+from funcodec.iterators.sequence_iter_factory import SequenceIterFactory
+from utils import Logger
+
 from .helper import dict_to_str, save, load_ckpt
-import random
 
 
 def gather_tensors(tensor):
@@ -26,27 +29,26 @@ def get_avg_result(res: dict):
     return new_res
 
 
-class AbsTrainer:
+class Trainer:
     def __init__(
         self,
         model,
-        tr_data,
-        cv_data,
+        tr_data: SequenceIterFactory,
+        cv_data: SequenceIterFactory,
         optim,
+        scheduler,
         config,
-        ckpt_path,
+        ckpt_dir,
         device,
         rank,
-        logger,
+        logger: Logger,
     ):
         self.model = model
         self.tr_data = tr_data
         self.cv_data = cv_data
         self.config = config
-        self.ckpt_dir = ckpt_path
         self.epoch_start = 0
         self.step = 0
-        self.cv_log = {}
         self.optim = optim
         self.device = device
         self.rank = rank
@@ -57,17 +59,15 @@ class AbsTrainer:
         self.best_field = config.best_field
         self.best_value = None
         self.best_save_type = config.best_save_type
-        self.ckpt_path = load_ckpt(self.ckpt_dir)
-        ckpt_path = self.ckpt_path
-        self.scheduler = config.scheduler
-        random.seed(config.seed + rank)
-        if self.scheduler is not None:
-            self.scheduler = self.scheduler(optimizer=self.optim)
+        ###
+        self.ckpt_path = load_ckpt(ckpt_dir)
+        self.scheduler = scheduler
         self.new_bob = config.new_bob
-        if ckpt_path is not None:
+        self.cv_log = {}
+        if self.ckpt_path is not None:
             ## loading ckpt
-            self._log(f"loading model from {ckpt_path}...")
-            ckpt = torch.load(ckpt_path, map_location="cpu")
+            self._log(f"loading model from {self.ckpt_path}...")
+            ckpt = torch.load(self.ckpt_path, map_location="cpu")
             torch.cuda.empty_cache()
             self.model.module.load_state_dict(ckpt["model_state_dict"])
             self.optim.load_state_dict(ckpt["optim"])
@@ -78,6 +78,23 @@ class AbsTrainer:
             self.optim.load_state_dict(ckpt["optim"])
             self.scheduler = ckpt["scheduler"]
             self.new_bob = ckpt["new_bob"]
+
+    def _train_one_batch(self, batch, data, optim, if_log) -> dict:
+        uttid, _data = data
+        for key, value in _data.items():
+            _data[key] = value.cuda()
+        loss, stats, weight = self.model(**_data)
+        loss.backward()
+        if if_log:
+            return stats
+        return None
+
+    def _eval_one_batch(self, data) -> dict:
+        uttid, _data = data
+        for key, value in _data.items():
+            _data[key] = value.cuda()
+        loss, stats, weight = self.model(**_data)
+        return stats
 
     def _log(self, msg):
         if self.rank == 0:
@@ -120,12 +137,6 @@ class AbsTrainer:
                 torch.save(content, path.replace(f"epoch{epoch}.pth", f"best.pth"))
         pass
 
-    def _train_one_batch(self, batch, data, optim, if_log) -> dict:
-        raise NotImplementedError("not implemented")
-
-    def _eval_one_batch(self, data) -> dict:
-        raise NotImplementedError("not implemented")
-
     def _train(self, optim, tr_data, epoch):
         self.model.train()
         total = len(tr_data) * tr_data.batch_size
@@ -145,8 +156,9 @@ class AbsTrainer:
                 self._log(f"tr, {dict_to_str(res)}")
             self.step += 1
 
-    def _eval(self, cv_data, epoch):
+    def _eval(self, cv_data: SequenceIterFactory, epoch):
         self.model.eval()
+        cv_data = cv_data.build_iter(epoch, shuffle=False)
         result = None
         if self.rank == 0:
             print(f"evaluating on cv_data of len {len(cv_data)* cv_data.batch_size}")
@@ -168,26 +180,14 @@ class AbsTrainer:
         return result[self.best_field]
 
     def train(self):
-        if self.config.get("pre_eval"):
-            self._log(f"tesing eval --- ")
-            ## test eval first
-            self._eval(
-                DataLoader(
-                    Subset(
-                        self.cv_data.dataset, list(range(2 * self.cv_data.batch_size))
-                    ),
-                    batch_size=self.cv_data.batch_size,
-                    collate_fn=self.cv_data.collate_fn,
-                ),
-                -1,
-            )
         for epoch in range(self.epoch_start, self.config["epoch"]):
             self._log(f"...epoch {epoch}...")
-            self.tr_data.sampler.set_epoch(epoch)
+            tr_data = self.tr_data.build_iter(epoch)
+            cv_data = self.cv_data.build_iter(epoch, shuffle=False)
             ### training
-            self._train(self.optim, self.tr_data, epoch)
+            self._train(self.optim, tr_data, epoch)
             #### evaluation
-            result = self._eval(self.cv_data, epoch)
+            result = self._eval(cv_data, epoch)
             if self.best_value is None:
                 save_best = True
                 self.best_value = result
