@@ -139,13 +139,13 @@ class Trainer:
 
     def _train(self, optim, tr_data, epoch):
         self.model.train()
-        total = len(tr_data) * tr_data.batch_size
+        total = len(tr_data) * 1
         start_time = time.time()
         for batch, data in enumerate(tr_data):
             if_log = batch % self.log_interval == 0
             res = self._train_one_batch(batch, data, optim, if_log)
             if if_log:
-                current = (batch + 1) * tr_data.batch_size
+                current = (batch + 1) * 1
                 res["epoch"] = epoch
                 res["step"] = self.step
                 res["p"] = f"[{current:>5d}/{total:>5d}]"
@@ -160,7 +160,7 @@ class Trainer:
         self.model.eval()
         result = None
         if self.rank == 0:
-            print(f"evaluating on cv_data of len {len(cv_data)* cv_data.batch_size}")
+            print(f"evaluating on cv_data of len {len(cv_data)* 1}")
         with torch.no_grad():
             for data in cv_data:
                 res = self._eval_one_batch(data)
