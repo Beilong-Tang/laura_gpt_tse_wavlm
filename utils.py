@@ -11,7 +11,7 @@ def init(module, config, *args, **kwargs):
 
 def setup_logger(args: Namespace, rank: int):
     now = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    log_dir = args.log
+    log_dir = os.path.join(args.log, os.path.basename(args.config).replace(".yaml", ""))
     print(f"logging dir: {log_dir}")
     os.makedirs(log_dir, exist_ok=True)
     logging.basicConfig(
