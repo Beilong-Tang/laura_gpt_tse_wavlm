@@ -3,7 +3,7 @@
 #SBATCH -n 32
 #SBATCH -N 1
 #SBATCH --gres=dcu:4
-#SBATCH -p kshdnormal
+#SBATCH -p kshdnormal02
 #SBATCH -o log.out
 #SBATCH -e log.err
 
