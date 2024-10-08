@@ -126,7 +126,7 @@ scheduler_conf:
 best_field: loss
 best_save_type: descend
 max_ckpt: 1
-log_interval: 5
+log_interval: 10
 epoch: 50
 
 # training process
