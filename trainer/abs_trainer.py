@@ -6,6 +6,7 @@ import torch.distributed as dist
 from torch.utils.data import Subset, DataLoader
 
 from funcodec.iterators.sequence_iter_factory import SequenceIterFactory
+from funcodec.torch_utils.recursive_op import recursive_average
 from utils import Logger
 
 from .helper import dict_to_str, save, load_ckpt
@@ -27,6 +28,13 @@ def get_avg_result(res: dict):
         value = sum(t.item() for t in tensors) / len(tensors)
         new_res[k] = value
     return new_res
+
+def apply_weight_average(loss, stats, weight):
+    loss = (loss * weight.type(loss.dtype)).sum()
+    stats, weight = recursive_average(stats, weight, distributed=True)
+    loss /= weight
+    loss *= torch.distributed.get_world_size()
+    return loss
 
 
 class Trainer:
@@ -78,11 +86,13 @@ class Trainer:
             self.scheduler = ckpt["scheduler"]
             self.new_bob = ckpt["new_bob"]
 
+    
     def _train_one_batch(self, batch, data, optim, if_log) -> dict:
         uttid, _data = data
         for key, value in _data.items():
             _data[key] = value.cuda()
         loss, stats, weight = self.model(**_data)
+        loss = apply_weight_average(loss, stats, weight)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)
         optim.step()
@@ -97,6 +107,7 @@ class Trainer:
         for key, value in _data.items():
             _data[key] = value.cuda()
         loss, stats, weight = self.model(**_data)
+        loss = apply_weight_average(loss, stats, weight)
         return stats
 
     def _log(self, msg):
