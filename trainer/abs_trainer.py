@@ -57,15 +57,16 @@ class Trainer:
         self.best_value = None
         self.best_save_type = config.best_save_type
         self.grad_clip = config.grad_clip
+        self.ckpt_dir = ckpt_dir
         ###
-        self.ckpt_path = load_ckpt(ckpt_dir)
         self.scheduler = scheduler
         self.new_bob = config.new_bob
         self.cv_log = {}
-        if self.ckpt_path is not None:
+        ckpt_path = load_ckpt(ckpt_dir)
+        if ckpt_path is not None:
             ## loading ckpt
-            self._log(f"loading model from {self.ckpt_path}...")
-            ckpt = torch.load(self.ckpt_path, map_location="cpu")
+            self._log(f"loading model from {ckpt_path}...")
+            ckpt = torch.load(ckpt_path, map_location="cpu")
             torch.cuda.empty_cache()
             self.model.module.load_state_dict(ckpt["model_state_dict"])
             self.optim.load_state_dict(ckpt["optim"])
