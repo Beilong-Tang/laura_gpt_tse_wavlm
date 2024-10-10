@@ -138,7 +138,7 @@ def main(args: argparse.Namespace):
     args.model_file = "./.temp.pth"
     logger.info("model ckpt is done, please change this ASAP!")
     args.logging = logger
-    forward = inference_func(vars(args))
+    forward = inference_func(**vars(args))
     # forward(data_path_and_name_and_type= args.)
     forward(args.data_path_and_name_and_type)
 
