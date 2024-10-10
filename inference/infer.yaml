@@ -3,7 +3,7 @@ data_path_and_name_and_type: [
         "/public/home/qinxy/bltang/LLM_TTS/egs/dump/libritts/test-clean/phoneme",
         "text",
         "text"
-    ],
+    ]
 ]
 
 
