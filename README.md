@@ -6,5 +6,8 @@ Unofficial Implementation for [LauraGPT](https://arxiv.org/abs/2310.04673)
 
 This repository simplifies the code for training the LauraGPT model.
 
+Prerequisite: 
+    1. FunCodec Installed
+
 We currently support
     - [ ] LauraTTS.
