@@ -97,8 +97,10 @@ class Trainer:
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)
         optim.step()
         optim.zero_grad()
+        self.scheduler.step()
         torch.cuda.empty_cache()
         if if_log:
+            stats['lr'] = optim.param_groups[0]['lr']
             return stats
         return None
 
@@ -223,4 +225,4 @@ class Trainer:
                 save_best,
             )
             dist.barrier()
-            self._apply_scheduler(result)
+            # self._apply_scheduler(result)
