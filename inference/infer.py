@@ -126,13 +126,13 @@ def inference_func(
 def main(args: argparse.Namespace):
 
     ## TODO: delete this code and write the code in the train.py
-    ckpt = torch.load(args.model_file, map_location="cuda")
-    torch.save(ckpt['model_state_dict'], "./.temp.pth")
-    args.model_file = "./.temp.pth"
     setup_seed(args.seed, 0)
     ##
     logger = setup_logger(args, rank=0, out=False)
-
+    ckpt = torch.load(args.model_file, map_location="cuda")
+    torch.save(ckpt["model_state_dict"], "./.temp.pth")
+    args.model_file = "./.temp.pth"
+    args.logging = logger
     forward = inference_func(vars(args))
     # forward(data_path_and_name_and_type= args.)
     forward(args.data_path_and_name_and_type)
