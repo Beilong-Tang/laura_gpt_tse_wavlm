@@ -131,6 +131,8 @@ def main(args: argparse.Namespace):
     setup_seed(args.seed, 0)
     ##
     logger = setup_logger(args, rank=0, out=False)
+
+    logger.info(args)
     ckpt = torch.load(args.model_file, map_location="cuda")
     torch.save(ckpt["model_state_dict"], "./.temp.pth")
     args.model_file = "./.temp.pth"
@@ -151,6 +153,5 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str)
     args = parser.parse_args()
     update_args(args, args.default_config)
-    print(args)
     main(args)
     pass
