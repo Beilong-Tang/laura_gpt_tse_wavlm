@@ -2,6 +2,9 @@ import datetime
 import os
 import logging
 import yaml
+import random
+import numpy as np
+import torch
 
 from argparse import Namespace
 
@@ -35,7 +38,8 @@ def setup_logger(args: Namespace, rank: int, out=True):
     logger.info("logger initialized")
     return Logger(logger, rank)
 
-def update_args(args:Namespace, config_file_path:str):
+
+def update_args(args: Namespace, config_file_path: str):
     with open(config_file_path, "r") as f:
         config = yaml.safe_load(f)
     for k, v in config.items():
@@ -69,6 +73,17 @@ class Logger:
         self.log.critical(f"rank {self.rank} - {msg}")
 
         pass
+
+
+def setup_seed(seed, rank):
+    SEED = int(seed) + rank
+    random.seed(SEED)
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+    torch.cuda.manual_seed_all(SEED)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    return SEED
 
 
 class AttrDict(Namespace):

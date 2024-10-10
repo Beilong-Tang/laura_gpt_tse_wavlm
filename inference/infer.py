@@ -12,7 +12,7 @@ from typing import Optional
 
 from funcodec.bin.text2audio_inference import Text2Audio, save_audio
 from funcodec.tasks.text2audio_generation import Text2AudioGenTask
-from utils import setup_logger, update_args
+from utils import setup_logger, update_args, setup_seed
 
 sys.path.append(os.getcwd())
 
@@ -124,23 +124,22 @@ def inference_func(
 
 
 def main(args: argparse.Namespace):
+    setup_seed(args.seed, 0)
     ##
     logger = setup_logger(args, rank=0, out=False)
 
-    forward = inference_func(
-        output_dir=args.output_dir, config_file=args.config, model_file=args.ckpt
-    )
+    forward = inference_func(vars(args))
     # forward(data_path_and_name_and_type= args.)
+    forward(args.data_path_and_name_and_type)
 
     pass
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_config", type=str)
+    parser.add_argument("--config_file", type=str)
     parser.add_argument("--default_config", type=str)
-    parser.add_argument("--ckpt", type=str)
-    parser.add_argument("--output_dir", type=str)
+    parser.add_argument("--model_file", type=str)
     parser.add_argument("--output_dir", type=str)
     args = parser.parse_args()
     update_args(args, args.default_config)
