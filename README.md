@@ -10,4 +10,4 @@ Prerequisite:
     1. FunCodec Installed
 
 We currently support
-    - [ ] LauraTTS.
+    - [x] LauraTTS.
