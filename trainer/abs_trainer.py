@@ -29,6 +29,7 @@ def get_avg_result(res: dict):
         new_res[k] = value
     return new_res
 
+
 def apply_weight_average(loss, stats, weight):
     loss = (loss * weight.type(loss.dtype)).sum()
     stats, weight = recursive_average(stats, weight, distributed=True)
@@ -86,7 +87,6 @@ class Trainer:
             self.scheduler = ckpt["scheduler"]
             self.new_bob = ckpt["new_bob"]
 
-    
     def _train_one_batch(self, batch, data, optim, if_log) -> dict:
         uttid, _data = data
         for key, value in _data.items():
