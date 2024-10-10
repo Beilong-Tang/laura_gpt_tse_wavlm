@@ -150,6 +150,6 @@ if __name__ == "__main__":
     parser.add_argument("--model_file", type=str)
     parser.add_argument("--output_dir", type=str)
     args = parser.parse_args()
-    update_args(args, args.default_config)
+    args = update_args(args, args.default_config)
     main(args)
     pass
