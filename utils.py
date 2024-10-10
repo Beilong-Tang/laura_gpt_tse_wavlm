@@ -1,6 +1,7 @@
 import datetime
 import os
 import logging
+import yaml
 
 from argparse import Namespace
 
@@ -9,19 +10,37 @@ def init(module, config, *args, **kwargs):
     return getattr(module, config["type"])(*args, **kwargs, **config["args"])
 
 
-def setup_logger(args: Namespace, rank: int):
-    now = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    log_dir = os.path.join(args.log, os.path.basename(args.config).replace(".yaml", ""))
-    print(f"logging dir: {log_dir}")
-    os.makedirs(log_dir, exist_ok=True)
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s,%(name)s,%(levelname)s,%(message)s",
-        handlers=[logging.FileHandler(f"{log_dir}/{now}.log"), logging.StreamHandler()],
-    )
+def setup_logger(args: Namespace, rank: int, out=True):
+    if out:
+        now = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        log_dir = os.path.join(
+            args.log, os.path.basename(args.config).replace(".yaml", "")
+        )
+        os.makedirs(log_dir, exist_ok=True)
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s,%(name)s,%(levelname)s,%(message)s",
+            handlers=[
+                logging.FileHandler(f"{log_dir}/{now}.log"),
+                logging.StreamHandler(),
+            ],
+        )
+    else:
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s,%(name)s,%(levelname)s,%(message)s",
+            handlers=[logging.StreamHandler()],
+        )
     logger = logging.getLogger()
     logger.info("logger initialized")
     return Logger(logger, rank)
+
+def update_args(args:Namespace, config_file_path:str):
+    with open(config_file_path, "r") as f:
+        config = yaml.safe_load(f)
+    for k, v in config.items():
+        args.__setattr__(k, v)
+    return args
 
 
 class Logger:

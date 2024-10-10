@@ -3,6 +3,7 @@ import os
 import sys
 import argparse
 import logging
+import yaml
 
 from typing import Sequence
 from typing import Union
@@ -11,6 +12,7 @@ from typing import Optional
 
 from funcodec.bin.text2audio_inference import Text2Audio, save_audio
 from funcodec.tasks.text2audio_generation import Text2AudioGenTask
+from utils import setup_logger, update_args
 
 sys.path.append(os.getcwd())
 
@@ -19,12 +21,9 @@ def inference_func(
     output_dir: Optional[str] = None,
     batch_size: int = 1,
     dtype: str = "float32",
-    ngpu: int = 1,
-    seed: int = 0,
     device: str = "cuda",
     logging: logging.Logger = logging.getLogger(),
     num_workers: int = 0,
-    log_level: Union[int, str] = "INFO",
     key_file: Optional[str] = None,
     config_file: Optional[str] = "config.yaml",
     model_file: Optional[str] = "model.pth",
@@ -124,9 +123,26 @@ def inference_func(
     return _forward
 
 
+def main(args: argparse.Namespace):
+    ##
+    logger = setup_logger(args, rank=0, out=False)
+
+    forward = inference_func(
+        output_dir=args.output_dir, config_file=args.config, model_file=args.ckpt
+    )
+    # forward(data_path_and_name_and_type= args.)
+
+    pass
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str)
+    parser.add_argument("--model_config", type=str)
+    parser.add_argument("--default_config", type=str)
     parser.add_argument("--ckpt", type=str)
     parser.add_argument("--output_dir", type=str)
+    parser.add_argument("--output_dir", type=str)
+    args = parser.parse_args()
+    update_args(args, args.default_config)
+    main(args)
     pass
