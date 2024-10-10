@@ -132,6 +132,7 @@ def main(args: argparse.Namespace):
     ckpt = torch.load(args.model_file, map_location="cuda")
     torch.save(ckpt["model_state_dict"], "./.temp.pth")
     args.model_file = "./.temp.pth"
+    logger.info("model ckpt is done, please change this ASAP!")
     args.logging = logger
     forward = inference_func(vars(args))
     # forward(data_path_and_name_and_type= args.)
