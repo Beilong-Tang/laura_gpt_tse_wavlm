@@ -23,4 +23,4 @@ module load mpi/hpcx/2.7.4/gcc-7.3.1
 module load compiler/rocm/dtk-23.04.1
 
 
-python -u inference/infer.py --config_file config/conf.yaml --model_file /public/home/qinxy/bltang/laura_gpt/ckpt/conf/epoch25.pth --output_dir /public/home/qinxy/bltang/laura_gpt/output
+python -u inference/infer.py --config_file config/conf.yaml --model_file /public/home/qinxy/bltang/laura_gpt/ckpt/conf/best.pth --output_dir /public/home/qinxy/bltang/laura_gpt/output
