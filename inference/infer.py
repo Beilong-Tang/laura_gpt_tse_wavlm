@@ -46,7 +46,6 @@ def inference_func(
         streaming=streaming,
         **kwargs,
     )
-    logging.info(model_kwargs)
     my_model = Text2Audio.from_pretrained(
         model_tag=model_tag,
         **model_kwargs,
@@ -132,12 +131,12 @@ def main(args: argparse.Namespace):
     ##
     logger = setup_logger(args, rank=0, out=False)
 
-    logger.info(args)
     ckpt = torch.load(args.model_file, map_location="cuda")
     torch.save(ckpt["model_state_dict"], "./.temp.pth")
     args.model_file = "./.temp.pth"
     logger.info("model ckpt is done, please change this ASAP!")
     args.logging = logger
+    logger.info(args)
     forward = inference_func(**vars(args))
     # forward(data_path_and_name_and_type= args.)
     forward(args.data_path_and_name_and_type)
