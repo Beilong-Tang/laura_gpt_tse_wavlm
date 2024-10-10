@@ -3,7 +3,7 @@ import os
 import sys
 import argparse
 import logging
-import yaml
+import torch
 
 from typing import Sequence
 from typing import Union
@@ -124,6 +124,11 @@ def inference_func(
 
 
 def main(args: argparse.Namespace):
+
+    ## TODO: delete this code and write the code in the train.py
+    ckpt = torch.load(args.model_file, map_location="cuda")
+    torch.save(ckpt['model_state_dict'], "./.temp.pth")
+    args.model_file = "./.temp.pth"
     setup_seed(args.seed, 0)
     ##
     logger = setup_logger(args, rank=0, out=False)
