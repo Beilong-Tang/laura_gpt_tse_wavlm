@@ -404,7 +404,7 @@ class LauraGenModel(AbsESPnetModel):
     ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor], torch.Tensor]:
         """
         Args:
-            text: (B, L, D)
+            text: (B, L)
             text_lengths: (B,)
             codec: (B, T, N)
             codec_lengths: (B,)
