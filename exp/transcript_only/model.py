@@ -413,7 +413,7 @@ class LauraGenModel(AbsESPnetModel):
         codec = codec[:, :codec_lengths.max()].long()
         if self.vocab_size > 0:
             mask = text != self.ignore_id
-            text = self.token_embedding(text * mask) * mask.unsqueeze(-1)
+            text = self.token_embedding(text * mask) * mask.unsqueeze(-1) # [B,L,D]
         # 1. encode text
         text, text_lengths = self.encode(text, text_lengths)
 
