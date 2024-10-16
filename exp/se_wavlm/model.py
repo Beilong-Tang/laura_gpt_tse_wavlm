@@ -202,9 +202,14 @@ class LauraGenModel(AbsESPnetModel):
                 Args:
                     text: (Batch, Length, Dim)
                     text_lengths: (Batch,)
-                    codec: (Batch, Length)
+                    codec: (Batch, Length, n_q)
                     codec_lengths: (Batch,)
                     need_targets: bool, whether provide targets
+                Returns:
+                    llm_inputs: [B, T, E], 
+                    llm_targets: [B, T, n_q] where T is len(target codec) + 1 (EOS)
+                    llm_lengths: [B,]
+                    target_lengths: [B,]
                 """
 
         if need_targets:
@@ -251,7 +256,7 @@ class LauraGenModel(AbsESPnetModel):
         Args:
             text: (Batch, Length, Dim)
             text_lengths: (Batch,)
-            codec: (Batch, Length)
+            codec: (Batch, Length, N_Q(2))
             codec_lengths: (Batch,)
         """
         batch_size = text.size(0)
@@ -260,6 +265,7 @@ class LauraGenModel(AbsESPnetModel):
         codec = codec[:, :codec_lengths.max()]
 
         # build inputs and targets for language model
+        # [B,T,E], [B, T, n_q]. [B,] , [B,]
         (sequence, target), (x_lengths, y_lengths) = self.build_llm_io(
             text, text_lengths,
             codec, codec_lengths,
@@ -270,14 +276,14 @@ class LauraGenModel(AbsESPnetModel):
         # x: (Batch, Length) -> y: (Batch, Length, NVocab)
         sequence = sequence[:, :x_lengths.max()]
         target = target[:, :y_lengths.max()]
-        y, _ = self.codec_lm(sequence, x_lengths, text_lengths+1)
+        y, _ = self.codec_lm(sequence, x_lengths, text_lengths+1) #[B, T, E]
         bb, tt = y.shape[0], y.shape[1]
-        y = y.reshape(bb, tt, self.predict_nq, -1)
+        y = y.reshape(bb, tt, self.predict_nq, -1) # [B, T, n_q, E']
         # 2b. Extract real logits
         logits_list = []
         for i, (text_len, codec_len) in enumerate(zip(text_lengths, codec_lengths)):
-            logits_list.append(y[i, text_len + 1:text_len + 2 + codec_len])
-        logits = pad_list(logits_list, 0.0)
+            logits_list.append(y[i, text_len + 1:text_len + 2 + codec_len]) 
+        logits = pad_list(logits_list, 0.0) #[T_max, n_q, E']
 
         # 3. Calc negative log likelihood
         tt = logits.shape[1]
@@ -415,7 +421,7 @@ class LauraGenModel(AbsESPnetModel):
             mask = text != self.ignore_id
             text = self.token_embedding(text * mask) * mask.unsqueeze(-1) # [B,L,D]
         # 1. encode text
-        text, text_lengths = self.encode(text, text_lengths)
+        text, text_lengths = self.encode(text, text_lengths) # Conformer Module [B,L,D] -> [B,L,D]
 
         # 2. generate the first `predict_nq` codec groups
         nll, logits, target, target_lengths = self.nll(text, text_lengths, codec[:, :, :self.predict_nq], codec_lengths)
