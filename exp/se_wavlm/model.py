@@ -372,9 +372,9 @@ class LauraGenModel(AbsESPnetModel):
         bb, tt = logits.shape[0], logits.shape[1]
         valid_mask = (~make_pad_mask(codec_lengths)).view(bb, tt, 1, 1).to(logits.device)
 
-        soft_prob = torch.softmax(logits, dim=-1)
-        pred_token = torch.argmax(soft_prob, dim=-1)
-        hard_prob = F.one_hot(pred_token, self.codebook_size).float()
+        soft_prob = torch.softmax(logits, dim=-1) # [B,T,N,V]
+        pred_token = torch.argmax(soft_prob, dim=-1) # [B,T,N]
+        hard_prob = F.one_hot(pred_token, self.codebook_size).float() #[B,T,N,V]
         # go-through gradient estimation
         pred_prob = soft_prob + (hard_prob - soft_prob).detach()
         if self.codec_sampling_ratio == 0.0:
@@ -383,12 +383,13 @@ class LauraGenModel(AbsESPnetModel):
         gt_prob = F.one_hot(
             torch.clamp(codec, 0, self.codebook_size - 1),
             self.codebook_size
-        ).float()
+        ).float() 
+        # [B,T,N,V]
         if self.codec_sampling_ratio == 1.0:
             return gt_prob * valid_mask
 
         # bb, tt, nn
-        correct_mask = (pred_token == codec)
+        correct_mask = (pred_token == codec) #[B,T,N]
         # higher codec_sampling_ratio means less prediction usage
         sampling_mask = torch.rand_like(correct_mask.float()) > self.codec_sampling_ratio
         # for correct tokens or (wrong tokens without sampling), we use predictions
