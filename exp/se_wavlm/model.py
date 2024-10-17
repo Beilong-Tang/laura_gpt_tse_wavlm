@@ -11,6 +11,7 @@ import torch.nn.functional as F
 from funcodec.torch_utils.device_funcs import force_gatherable
 from funcodec.losses.label_smoothing_loss import LabelSmoothingLoss
 from copy import deepcopy
+from models.kmeans import KMeansQuantizer
 
 
 class QuantizerCodebook(torch.nn.Module):
@@ -66,10 +67,11 @@ class LauraGenModel(AbsESPnetModel):
     def __init__(
             self,
             input_size,                     # seq size of text embeddings
-            text_encoder: nn.Module,        # encode text inputs
-            codec_encoder: nn.Module,       # predict codec_emb according to codec_1st
-            vocab_size: int = 0,            # 0 for embedding inputs, > 0 for token inputs such as phoneme
-            token_list: List[str] = None,   # None for embedding inputs, not None for token inputs
+            # text_encoder: nn.Module,        # encode text inputs
+            # codec_encoder: nn.Module,       # predict codec_emb according to codec_1st
+            # vocab_size: int = 0,            # 0 for embedding inputs, > 0 for token inputs such as phoneme
+            # token_list: List[str] = None,   # None for embedding inputs, not None for token inputs
+            kmeans_ckpt: str,
             pos_enc: str = "abs_pos",
             codec_conf: Dict = None,
             ignore_id: int = -1,
@@ -94,23 +96,16 @@ class LauraGenModel(AbsESPnetModel):
 
         self.ignore_id = ignore_id
         self.codec_sampling_ratio = codec_sampling_ratio
-        self.num_quantizers = num_quantizers = codec_conf.get("num_quantizers", 32)
-        self.codebook_size = codebook_size = codec_conf.get("codebook_size", 1024)
-        self.codebook_dim = codebook_dim = codec_conf.get("codebook_dim", 128)
+        self.codebook_size = codec_conf.get("codebook_size", 1000)
+        self.codebook_dim = codec_conf.get("codebook_dim", 128)
         self.predict_nq = predict_nq
         self.pos_emb_func = pos_enc_class(self.codebook_dim, 0.1)
         self.pos_emb_type = pos_emb_type
 
         # 1. build text inputs related modules
-        self.text_encoder = text_encoder
-        self.text_enc_out_layer = nn.Linear(
-            self.text_encoder.output_size() if text_encoder is not None else input_size,
-            self.codebook_dim
-        )
-        self.vocab_size = vocab_size
-        self.token_list = token_list
-        if vocab_size > 0:
-            self.token_embedding = torch.nn.Embedding(vocab_size, input_size)
+        self.kmeans = KMeansQuantizer(kmeans_ckpt)
+        self.text_encoder = None
+        self.text_enc_out_layer = nn.Linear(input_size,self.codebook_dim)
 
         # 2. build Music language model related moduels
         self.sos_eos = 0
@@ -121,10 +116,10 @@ class LauraGenModel(AbsESPnetModel):
         self.codec_lm = self.build_codec_lm(codec_lm_conf)
 
         # 3. build fine codec predictor
-        self.codec_encoder = codec_encoder
-        self.codec_encoder_out_layer = nn.Linear(codec_encoder.output_size(), self.codebook_dim)
+        # self.codec_encoder = codec_encoder
+        # self.codec_encoder_out_layer = nn.Linear(codec_encoder.output_size(), self.codebook_dim)
 
-        self.quantizer_codebook = QuantizerCodebook(num_quantizers, codebook_size, codebook_dim)
+        # self.quantizer_codebook = QuantizerCodebook(num_quantizers, codebook_size, codebook_dim)
         self.criterion_ce = LabelSmoothingLoss(
             size=self.lm_out_voc_size // self.predict_nq,
             padding_idx=ignore_id,
@@ -133,17 +128,6 @@ class LauraGenModel(AbsESPnetModel):
             reduction=False,
         )
         self.length_normalized_loss = length_normalized_loss
-        from funcodec.models.quantizer.costume_quantizer import CostumeQuantizer
-        self.quantizer = CostumeQuantizer(
-            input_size=self.codebook_dim,
-            codebook_size=self.codebook_size,
-            num_quantizers=32,
-            ema_decay=0.99,
-            kmeans_init=True,
-            sampling_rate=16000,
-            quantize_dropout=False,
-            use_ddp=True,
-        )
 
     def build_codec_lm(self, conf: Dict):
         name = conf.pop("name")
@@ -352,8 +336,10 @@ class LauraGenModel(AbsESPnetModel):
             codec: (B, T, Nq)
             codec_lengths: (B, )
         """
+        assert codec.shape[-1] == 1 ## only 1 codebook so far
+        codec = codec.squeeze(-1)
         with torch.no_grad():
-            return self.quantizer_codebook(codec, codec_lengths)
+            return self.kmeans.emb(codec)
 
     def prob_sampler(
             self,
@@ -411,16 +397,13 @@ class LauraGenModel(AbsESPnetModel):
     ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor], torch.Tensor]:
         """
         Args:
-            text: (B, L)
+            text: (B, L, E)
             text_lengths: (B,)
             codec: (B, T, N_Q)
             codec_lengths: (B,)
         """
         text = text[:, :text_lengths.max()]
         codec = codec[:, :codec_lengths.max()].long()
-        if self.vocab_size > 0:
-            mask = text != self.ignore_id
-            text = self.token_embedding(text * mask) * mask.unsqueeze(-1) # [B,L,D]
         # 1. encode text
         text, text_lengths = self.encode(text, text_lengths) # Conformer Module [B,L,D] -> [B,L,D]
 
@@ -433,26 +416,26 @@ class LauraGenModel(AbsESPnetModel):
 
         # 3. generate dense codec vectors
         # sampling codec prob
-        prob = self.prob_sampler(
-            # remove <eos> from logits
-            logits[:, :-1, :self.predict_nq, :self.codebook_size],
-            codec[:, :, :self.predict_nq],
-            codec_lengths
-        )
+        # prob = self.prob_sampler(
+        #     # remove <eos> from logits
+        #     logits[:, :-1, :self.predict_nq, :self.codebook_size],
+        #     codec[:, :, :self.predict_nq],
+        #     codec_lengths
+        # )
         
-        codec_emb, codec_emb_lens = self.cal_codec_emb(text, text_lengths, prob, codec_lengths)
+        # codec_emb, codec_emb_lens = self.cal_codec_emb(text, text_lengths, prob, codec_lengths)
 
-        # 4. loss calculation
-        target_emb = self.calc_dense_vector(codec, codec_lengths)
-        reg_loss, l1_loss, l2_loss = self.calc_reg_loss(codec_emb, target_emb, codec_lengths)
-        loss = reg_loss + nll_loss
+        # # 4. loss calculation
+        # target_emb = self.calc_dense_vector(codec, codec_lengths)
+        # reg_loss, l1_loss, l2_loss = self.calc_reg_loss(codec_emb, target_emb, codec_lengths)
+        # loss = reg_loss + nll_loss
         stats = dict(
             loss=loss.detach(),
-            nll_loss=nll_loss.detach(),
-            reg_loss=reg_loss.detach(),
-            reg_l1_loss=l1_loss.detach(),
-            reg_l2_loss=l2_loss.detach(),
-            batch_size=text.shape[0],
+            # nll_loss=nll_loss.detach(),
+            # reg_loss=reg_loss.detach(),
+            # reg_l1_loss=l1_loss.detach(),
+            # reg_l2_loss=l2_loss.detach(),
+            # batch_size=text.shape[0],
             seq_length=text_lengths.max() + codec_lengths.max(),
         )
 

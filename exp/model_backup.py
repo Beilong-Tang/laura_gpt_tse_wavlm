@@ -380,7 +380,7 @@ class LauraGenModel(AbsESPnetModel):
     def calc_dense_vector(self, codec, codec_lengths):
         """
         Args:
-            codec: (B, T, Nq)
+            codec: (B, T, Nq=1)
             codec_lengths: (B, )
         """
         with torch.no_grad():

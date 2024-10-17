@@ -263,7 +263,6 @@ class AbsTrainer:
         self.ckpt_path = load_ckpt(self.ckpt_dir)
         ckpt_path = self.ckpt_path
         self.scheduler = config.scheduler
-        random.seed(config.seed + rank)
         if self.scheduler is not None:
             self.scheduler = self.scheduler(optimizer=self.optim)
         self.new_bob = config.new_bob

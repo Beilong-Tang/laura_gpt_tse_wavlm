@@ -1,0 +1,27 @@
+input_size: 1024 # WavLM output Dimension
+
+# model related
+text_encoder: None
+model: laura_gen_model
+model_conf:
+    codec_sampling_ratio: 0.5
+    lsm_weight: 0.0
+    length_normalized_loss: true
+    predict_nq: 1
+    codec_conf:
+        codebook_size: 1000
+        codebook_dim: 128 # Embedding Dimension
+    codec_lm_conf:
+        name: transformer
+        pos_enc: rel_pos
+        selfattention_layer_type: rel_selfattn
+        embed_unit: 128
+        att_unit: 512
+        head: 8
+        unit: 2048
+        # layer: 12
+        layer: 6
+        dropout_rate: 0.1
+        pe_type: uni
+        bidirectional_inputs: true
+        codec_groups: 1
