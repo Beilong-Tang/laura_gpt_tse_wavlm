@@ -5,12 +5,20 @@ import yaml
 import random
 import numpy as np
 import torch
+import importlib
 
 from argparse import Namespace
 
 
-def init(module, config, *args, **kwargs):
+def init_(module, config, *args, **kwargs):
     return getattr(module, config["type"])(*args, **kwargs, **config["args"])
+
+
+def init(path: str):
+    p = path.split(".")
+    package = ".".join(p[:-1])
+    module = p[-1]
+    return getattr(importlib.import_module(package), module)
 
 
 def setup_logger(args: Namespace, rank: int, out=True):

@@ -1,4 +1,9 @@
 input_size: 1024 # WavLM output Dimension
+kmeans_ckpt: 
+
+
+model:
+    type: 
 
 # model related
 text_encoder: None
@@ -10,7 +15,7 @@ model_conf:
     predict_nq: 1
     codec_conf:
         codebook_size: 1000
-        codebook_dim: 128 # Embedding Dimension
+        codebook_dim: 1024 # Embedding Dimension
     codec_lm_conf:
         name: transformer
         pos_enc: rel_pos

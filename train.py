@@ -18,7 +18,7 @@ from _funcodec import init_sequence_iter_factory
 
 from trainer.abs_trainer import Trainer
 from utils import setup_logger
-from utils import init
+from utils import init_
 from utils import AttrDict
 
 
@@ -73,7 +73,7 @@ def main(rank, args):
     model = DDP(model, device_ids=[args.gpu])
     l.info(f"model {model} is intialized")
     ## optimizer
-    optim = init(torch.optim, args.optim, model.parameters())
+    optim = init_(torch.optim, args.optim, model.parameters())
     ## scheduler
     assert args.scheduler == "warmuplr"
     scheduler = WarmupLR(optim, **args.scheduler_conf)

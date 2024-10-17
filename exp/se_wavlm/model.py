@@ -64,6 +64,13 @@ class LauraGenModel(AbsESPnetModel):
     [1] LauraGPT: Listen, Attend, Understand, and Regenerate Audio with GPT, 2023,
     https://arxiv.org/abs/2310.04673
     """
+
+    @staticmethod
+    def build_model(input_size):
+
+        pass
+
+
     def __init__(
             self,
             input_size,                     # seq size of text embeddings
@@ -97,7 +104,7 @@ class LauraGenModel(AbsESPnetModel):
         self.ignore_id = ignore_id
         self.codec_sampling_ratio = codec_sampling_ratio
         self.codebook_size = codec_conf.get("codebook_size", 1000)
-        self.codebook_dim = codec_conf.get("codebook_dim", 128)
+        self.codebook_dim = codec_conf.get("codebook_dim", 1024)
         self.predict_nq = predict_nq
         self.pos_emb_func = pos_enc_class(self.codebook_dim, 0.1)
         self.pos_emb_type = pos_emb_type
@@ -186,7 +193,7 @@ class LauraGenModel(AbsESPnetModel):
                 Args:
                     text: (Batch, Length, Dim)
                     text_lengths: (Batch,)
-                    codec: (Batch, Length, n_q)
+                    codec: (Batch, Length, n_q=1)
                     codec_lengths: (Batch,)
                     need_targets: bool, whether provide targets
                 Returns:
@@ -335,6 +342,8 @@ class LauraGenModel(AbsESPnetModel):
         Args:
             codec: (B, T, Nq)
             codec_lengths: (B, )
+        Returns:
+            emb: [B,T,E]
         """
         assert codec.shape[-1] == 1 ## only 1 codebook so far
         codec = codec.squeeze(-1)

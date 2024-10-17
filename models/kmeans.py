@@ -3,6 +3,7 @@ import joblib
 import warnings
 import torch.nn as nn
 
+
 class KMeansQuantizer(nn.Module):
     def __init__(self, checkpoint_path):
         super().__init__()
