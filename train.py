@@ -9,6 +9,10 @@ import torch.distributed as dist
 import torch.nn as nn
 from torch.nn.parallel import DistributedDataParallel as DDP
 
+from funcodec.tasks.text2audio_generation import Text2AudioGenTask
+from funcodec.schedulers.warmup_lr import WarmupLR
+from funcodec.torch_utils.load_pretrained_model import load_pretrained_model
+
 from _funcodec import init_sequence_iter_factory
 
 from trainer.abs_trainer import Trainer
