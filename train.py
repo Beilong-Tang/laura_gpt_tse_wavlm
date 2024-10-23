@@ -100,7 +100,7 @@ if __name__ == "__main__":
     parser.add_argument("--log", default="./log", type=str, help="Output of the log")
     parser.add_argument("--config", type=str, default=None, help="path to yaml config")
     args = parser.parse_args()
-    update_args(args.config)
+    update_args(args,args.config)
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
     args.gpus = [int(i) for i in args.gpus.split(",")]
     args.ngpu = len(args.gpus)
