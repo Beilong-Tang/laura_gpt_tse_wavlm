@@ -51,6 +51,7 @@ def main(rank, args):
     l.info("logging initialized succesully")
     l.info(args)
     l.info(f"rank {rank} of world_size {len(args.gpus)} started...")
+    l.info(f"{torch.cuda.is_available()}")
     setup(rank, len(args.gpus), args.dist_backend)
     args.gpu = args.gpus[rank]
     torch.cuda.set_device(args.gpu)
