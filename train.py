@@ -18,8 +18,9 @@ from _funcodec import init_sequence_iter_factory
 
 from trainer.abs_trainer import Trainer
 from utils import setup_logger
-from utils import init_
+from utils import init
 from utils import AttrDict
+from utils import update_args
 
 
 def setup_seed(seed, rank):
@@ -58,25 +59,15 @@ def main(rank, args):
     setup_seed(args.seed, rank)
     l.info("setup model")
     ## load laura gpt model
-    model: nn.Module = Text2AudioGenTask.build_model(args)
+    model: nn.Module = init(args.model)
     model.cuda()
-    for p in args.init_param:
-        l.info(f"Loading pretrained params from {p}")
-        load_pretrained_model(
-            model=model,
-            init_param=p,
-            ignore_init_mismatch=True,
-            # NOTE(kamo): "cuda" for torch.load always indicates cuda:0
-            #   in PyTorch<=1.4
-            map_location=f"cuda:{torch.cuda.current_device()}",
-        )
     model = DDP(model, device_ids=[args.gpu])
     l.info(f"model {model} is intialized")
     ## optimizer
-    optim = init_(torch.optim, args.optim, model.parameters())
+    optim = init(args.optim, model.parameters())
     ## scheduler
     assert args.scheduler == "warmuplr"
-    scheduler = WarmupLR(optim, **args.scheduler_conf)
+    scheduler = init(args.scheduler, optim)
     l.info(f"scheduler {scheduler} and optim {optim} is initialized")
     ## setup dataloader
     ### Initialized iter factory
@@ -110,14 +101,9 @@ if __name__ == "__main__":
     parser.add_argument("--log", default="./log", type=str, help="Output of the log")
     parser.add_argument("--config", type=str, default=None, help="path to yaml config")
     args = parser.parse_args()
-    if args.config is not None:
-        with open(args.config, "r") as file:
-            config = yaml.safe_load(file)
-        for k, v in config.items():
-            args.__setattr__(k, v)
+    update_args(args.config)
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
     args.gpus = [int(i) for i in args.gpus.split(",")]
     args.ngpu = len(args.gpus)
-
     mp.spawn(main, args=(args,), nprocs=len(args.gpus), join=True)
     pass

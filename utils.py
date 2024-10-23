@@ -10,15 +10,16 @@ import importlib
 from argparse import Namespace
 
 
-def init_(module, config, *args, **kwargs):
-    return getattr(module, config["type"])(*args, **kwargs, **config["args"])
+def init(config, *args, **kwargs):
+    assert "type" in config 
+    assert "args" in config
+    return _init(config['type'], config['args'], *args, **kwargs)
 
-
-def init(path: str):
+def _init(path: str, config: dict, *args, **kwargs):
     p = path.split(".")
     package = ".".join(p[:-1])
     module = p[-1]
-    return getattr(importlib.import_module(package), module)
+    return getattr(importlib.import_module(package), module)(*args, **kwargs, **config)
 
 
 def setup_logger(args: Namespace, rank: int, out=True):
