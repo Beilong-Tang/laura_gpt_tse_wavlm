@@ -39,6 +39,7 @@ seed: 1234
 model:
     type: exp.laura_gpt_se.model.LauraGenModel
     args:
+        kmeans_ckpt: *kmeans_ckpt
         codec_sampling_ratio: 0.5
         lsm_weight: 0.0
         length_normalized_loss: true
