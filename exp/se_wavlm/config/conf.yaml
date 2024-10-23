@@ -37,7 +37,7 @@ seed: 1234
 
 ## Model
 model:
-    type: exp.laura_gpt_se.model.LauraGenModel
+    type: exp.se_wavlm.model.LauraGenModel
     args:
         kmeans_ckpt: *kmeans_ckpt
         codec_sampling_ratio: 0.5
