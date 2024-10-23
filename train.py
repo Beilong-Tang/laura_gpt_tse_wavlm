@@ -102,6 +102,10 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=str, default=None, help="path to yaml config")
     args = parser.parse_args()
     update_args(args,args.config)
+    print(torch.cuda.is_available())
+    log = setup_logger(args, rank = 0)
+    log.info(f"torch cuda: {torch.cuda.is_available()}")
+
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
     args.gpus = [int(i) for i in args.gpus.split(",")]
     args.ngpu = len(args.gpus)
