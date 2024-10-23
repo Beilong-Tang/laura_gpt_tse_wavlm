@@ -66,7 +66,7 @@ def main(rank, args):
     ## optimizer
     optim = init(args.optim, model.parameters())
     ## scheduler
-    assert args.scheduler == "warmuplr"
+    
     scheduler = init(args.scheduler, optim)
     l.info(f"scheduler {scheduler} and optim {optim} is initialized")
     ## setup dataloader
