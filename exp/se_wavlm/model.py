@@ -436,6 +436,7 @@ class LauraGenModel(AbsESPnetModel):
         # target_emb = self.calc_dense_vector(codec, codec_lengths)
         # reg_loss, l1_loss, l2_loss = self.calc_reg_loss(codec_emb, target_emb, codec_lengths)
         # loss = reg_loss + nll_loss
+        loss = nll_loss
         stats = dict(
             loss=loss.detach(),
             # nll_loss=nll_loss.detach(),
