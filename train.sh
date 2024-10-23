@@ -5,8 +5,8 @@
 #SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=dcu:4
-#SBATCH -o log.out
-#SBATCH -e log.err
+#SBATCH -o log_train.out
+#SBATCH -e log_train.err
 
 # export MIOPEN_FIND_MODE=3
 # export HSA_FORCE_FINE_GRAIN_PRICE=1
