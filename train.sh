@@ -1,9 +1,10 @@
 #!/bin/bash
 #SBATCH -J train_laura_se
-#SBATCH -n 32
-#SBATCH -N 1
-#SBATCH --gres=dcu:4
 #SBATCH -p kshdnormal02
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=4
+#SBATCH --cpus-per-task=8
+#SBATCH --gres=dcu:4
 #SBATCH -o log.out
 #SBATCH -e log.err
 
