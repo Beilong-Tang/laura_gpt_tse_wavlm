@@ -65,15 +65,9 @@ class LauraGenModel(AbsESPnetModel):
     https://arxiv.org/abs/2310.04673
     """
 
-    @staticmethod
-    def build_model(input_size):
-
-        pass
-
-
     def __init__(
             self,
-            input_size,                     # seq size of text embeddings
+            # input_size,                     # seq size of text embeddings
             # text_encoder: nn.Module,        # encode text inputs
             # codec_encoder: nn.Module,       # predict codec_emb according to codec_1st
             # vocab_size: int = 0,            # 0 for embedding inputs, > 0 for token inputs such as phoneme
@@ -112,7 +106,7 @@ class LauraGenModel(AbsESPnetModel):
         # 1. build text inputs related modules
         self.kmeans = KMeansQuantizer(kmeans_ckpt)
         self.text_encoder = None
-        self.text_enc_out_layer = nn.Linear(input_size,self.codebook_dim)
+        # self.text_enc_out_layer = nn.Linear(input_size,self.codebook_dim)
 
         # 2. build Music language model related moduels
         self.sos_eos = 0
@@ -408,11 +402,15 @@ class LauraGenModel(AbsESPnetModel):
         Args:
             text: (B, L, E)
             text_lengths: (B,)
-            codec: (B, T, N_Q)
+            codec: (B, L, E) # The continuous feature
             codec_lengths: (B,)
         """
         text = text[:, :text_lengths.max()]
         codec = codec[:, :codec_lengths.max()].long()
+
+        codec = self.kmeans(codec).unsqueeze(-1) # [B,L, 1]
+
+
         # 1. encode text
         text, text_lengths = self.encode(text, text_lengths) # Conformer Module [B,L,D] -> [B,L,D]
 
