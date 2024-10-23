@@ -81,6 +81,7 @@ num_workers: 8
 max_cache_size: 0.0
 max_cache_fd: 32
 train_dtype: float32
+grad_clip: 5
 
 
 best_field: loss
