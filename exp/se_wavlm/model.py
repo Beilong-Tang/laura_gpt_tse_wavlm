@@ -504,32 +504,36 @@ class LauraGenModel(AbsESPnetModel):
             beam_size: int = 1,
             continual: List = None,
     ) -> torch.Tensor:
+        """
+        text: [1, T, ]
+        text_lengths: [1]
+        """
         device = text.device
         out_tokens = [] if continual is None else deepcopy(continual)
-        sos_eos_emb = self.lm_embedding(torch.tensor([[self.sos_eos]], dtype=torch.int64, device=device))
-        task_id_emb = self.lm_embedding(torch.tensor([[self.task_id]], dtype=torch.int64, device=device))
-        prompt = torch.cat([sos_eos_emb, text, task_id_emb], dim=1)
+        sos_eos_emb = self.lm_embedding(torch.tensor([[self.sos_eos]], dtype=torch.int64, device=device)) # [1,1]
+        task_id_emb = self.lm_embedding(torch.tensor([[self.task_id]], dtype=torch.int64, device=device)) # [1,1]
+        prompt = torch.cat([sos_eos_emb, text, task_id_emb], dim=1) # [1, T + 2]
         state = None
         for i in range(max_length):
             if len(out_tokens) > 0:
-                codec_prompt = torch.tensor([out_tokens], dtype=torch.int64, device=device)
+                codec_prompt = torch.tensor([out_tokens], dtype=torch.int64, device=device) #[1, T']
                 codec_lengths = torch.tensor([len(out_tokens)], dtype=torch.int64, device=device)
                 # if any quantizer output is eos
                 if torch.any(codec_prompt[:, -1] == (self.codebook_size+self.sos_eos)):
                     break
                 seq_input, _ = self.build_llm_io(
                     text, text_lengths,
-                    codec_prompt, codec_lengths,
+                    codec_prompt, codec_lengths, # codec_prompt: [1, T, 1]
                     need_targets=False
                 )
             else:
                 seq_input, _ = self.build_llm_io(
                     text, text_lengths, None, None,
                     need_targets=False
-                )
+                ) # seq_input shape [T,E]
 
             # not use state, since has not aligned
-            pred, _ = self.codec_lm.score(seq_input[0], state, prompt[0])
+            pred, _ = self.codec_lm.score(seq_input[0], state, prompt[0]) # seq_input[0] is [T,E]
 
             # sampling all `nq` token ids
             pred = pred.reshape(self.predict_nq, -1)

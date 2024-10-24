@@ -16,7 +16,7 @@ from typing import Optional
 
 from funcodec.bin.text2audio_inference import Text2Audio, save_audio
 from funcodec.tasks.text2audio_generation import Text2AudioGenTask
-from utils import setup_logger, update_args, setup_seed, init
+from utils import setup_logger, update_args, setup_seed
 
 
 def inference_func(
@@ -126,53 +126,7 @@ def inference_func(
 
     return _forward
 
-def inference(args: argparse.Namespace):
-    ## load model
-    l:logging.Logger = args.logging
-    model:torch.nn.Module = init(args.config_file['model'])
-    model.load_state_dict(args.ckpt['model_state_dict'])
-    model.cuda()
-    model.eval()
-    l.info("model successfully intialized")
-    ## init data
-    loader = Text2AudioGenTask.build_streaming_iterator(
-        args.data_path_and_name_and_type,
-        dtype="float32",
-        batch_size=1,
-        key_file=None,
-        num_workers=0,
-        preprocess_fn=None,
-        collate_fn=Text2AudioGenTask.build_collate_fn(
-            None, False, raw_sequence=("text", "prompt_text")
-        ),
-        allow_variable_data_keys=True,
-        inference=True,
-    )
-    l.info("data initialized successfully")
-    for keys, data in loader:
-            key = keys[0]
-            logging.info(f"generating {key}")
-            model_inputs = [data["text"][0]]
-            for input_key in ["prompt_text", "prompt_audio"]:
-                if input_key in data:
-                    model_inputs.append(data[input_key][0])
-            l.info(f"model_inputs: {model_inputs}")
-            ret_val = model.decode_codec(*model_inputs)
-            l.info(f"ret_val: {ret_val.shape}")
-            item = {"key": key, "value": ret_val}
-            if output_path is not None:
-                for suffix, wave in ret_val.items():
-                    file_name = key.replace(".wav", "") + "_" + suffix + ".wav"
-                    save_path = os.path.join(output_path, file_name)
-                    save_audio(
-                        wave[0],
-                        save_path,
-                        rescale=True,
-                        sample_rate=my_model.codec_model.model.quantizer.sampling_rate,
-                    )
-            else:
-                result_list.append(item)
-                
+
 def main(args: argparse.Namespace):
 
     ## TODO: delete this code and write the code in the train.py
@@ -181,10 +135,11 @@ def main(args: argparse.Namespace):
     logger = setup_logger(args, rank=0, out=False)
 
     ckpt = torch.load(args.model_file, map_location="cuda")
-    args.ckpt = ckpt
+    torch.save(ckpt["model_state_dict"], "./.temp.pth")
+    args.model_file = "./.temp.pth"
+    logger.info("model ckpt is done, please change this ASAP!")
     args.logging = logger
     logger.info(args)
-    inference(args)
     forward = inference_func(**vars(args))
     # forward(data_path_and_name_and_type= args.)
     forward(args.data_path_and_name_and_type, args.raw_inputs)
@@ -199,6 +154,7 @@ if __name__ == "__main__":
     parser.add_argument("--model_file", type=str)
     parser.add_argument("--output_dir", type=str)
     parser.add_argument("--raw_inputs", nargs="*", default=None, type=str)
+    parser.add_argument("--tokenize_to_phone", action="store_true")
     args = parser.parse_args()
     update_args(args, args.default_config)
     main(args)
