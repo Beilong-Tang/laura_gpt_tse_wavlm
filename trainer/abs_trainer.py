@@ -37,8 +37,10 @@ def apply_weight_average(loss, stats, weight):
     loss *= torch.distributed.get_world_size()
     return loss
 
-SHAPE_LOG = False
 class Trainer:
+
+    DATA_SAVE = False
+
     def __init__(
         self,
         model,
@@ -92,12 +94,12 @@ class Trainer:
         for key, value in _data.items():
             _data[key] = value.cuda()
         if self.rank == 0:
-            if not DATA_SAVE:
+            if not Trainer.DATA_SAVE:
                 torch.save(_data['text'].cpu(),"text_1.pt")
                 torch.save(_data['text_length'].cpu(),"text_length_1.pt")
                 torch.save(_data['codec'].cpu(),"codec_1.pt")
                 torch.save(_data['codec_length'].cpu(),"codec_length_1.pt")
-                DATA_SAVE = True
+                Trainer.DATA_SAVE = True
             self._log(f"text shape: {_data['text'].shape}")
         loss, stats, weight = self.model(**_data)
         loss = apply_weight_average(loss, stats, weight)
