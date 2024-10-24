@@ -409,8 +409,6 @@ class LauraGenModel(AbsESPnetModel):
         codec = codec[:, :codec_lengths.max()].long()
 
         codec = self.kmeans(codec).unsqueeze(-1) # [B,L, 1]
-
-
         # 1. encode text
         text, text_lengths = self.encode(text, text_lengths) # Conformer Module [B,L,D] -> [B,L,D]
 
