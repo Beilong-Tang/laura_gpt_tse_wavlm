@@ -102,7 +102,7 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=str, default=None, help="path to yaml config")
     args = parser.parse_args()
     update_args(args,args.config)
-    print(torch.cuda.is_available())
+    print(f"cuda available {torch.cuda.is_available()}")
     log = setup_logger(args, rank = 0)
     log.info(f"torch cuda: {torch.cuda.is_available()}")
 
