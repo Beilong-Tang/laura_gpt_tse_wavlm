@@ -3,7 +3,7 @@
 #SBATCH -n 32
 #SBATCH -N 1
 #SBATCH --gres=dcu:4
-#SBATCH -p kshdnormal02
+#SBATCH -p kshdnormal
 #SBATCH -o inference/log_infer.out
 #SBATCH -e inference/log_infer.err
 
