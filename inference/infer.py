@@ -127,13 +127,17 @@ def inference_func(
     return _forward
 
 def inference(args: argparse.Namespace):
-    ## load model
     l:logging.Logger = args.logging
+    ## load model
     model:torch.nn.Module = init(args.config_file['model'])
     model.load_state_dict(args.ckpt['model_state_dict'])
     model.cuda()
     model.eval()
     l.info("model successfully intialized")
+    ## load decoder:
+    
+    
+
     ## init data
     loader = Text2AudioGenTask.build_streaming_iterator(
         args.data_path_and_name_and_type,
@@ -157,8 +161,9 @@ def inference(args: argparse.Namespace):
                 if input_key in data:
                     model_inputs.append(data[input_key][0])
             l.info(f"model_inputs: {model_inputs}")
-            ret_val = model.decode_codec(*model_inputs)
+            ret_val = model.decode_codec(*model_inputs) # [1, T, 1]
             l.info(f"ret_val: {ret_val.shape}")
+
             item = {"key": key, "value": ret_val}
             if output_path is not None:
                 for suffix, wave in ret_val.items():
@@ -172,7 +177,7 @@ def inference(args: argparse.Namespace):
                     )
             else:
                 result_list.append(item)
-                
+
 def main(args: argparse.Namespace):
 
     ## TODO: delete this code and write the code in the train.py

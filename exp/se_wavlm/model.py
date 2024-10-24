@@ -507,6 +507,7 @@ class LauraGenModel(AbsESPnetModel):
         """
         text: [1, T, ]
         text_lengths: [1]
+        Return out tokens: [1, T ,n_q]
         """
         device = text.device
         out_tokens = [] if continual is None else deepcopy(continual)
@@ -540,13 +541,14 @@ class LauraGenModel(AbsESPnetModel):
             top_ids = []
             for k in range(self.predict_nq):
                 top_ids.append(self.sampling_ids(pred[k], sampling, beam_size)[0].item())
-            out_tokens.append(top_ids)
+            out_tokens.append(top_ids) 
+        # output tokens become: [T, n_q]
 
         # remove eos token
         if torch.any(torch.tensor(out_tokens[-1], dtype=torch.int64) == self.codebook_size+self.sos_eos):
             out_tokens = out_tokens[:-1]
 
-        return torch.tensor([out_tokens], dtype=torch.int64, device=device)
+        return torch.tensor([out_tokens], dtype=torch.int64, device=device) # [1, T, n_q]
 
     def syn_audio(
             self,
