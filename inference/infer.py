@@ -167,10 +167,12 @@ def inference(args: argparse.Namespace):
     for keys, data in loader:
         key = keys[0]
         logging.info(f"generating {key}")
-        model_inputs = [data["text"][0].cuda()]
+        model_inputs = [data["text"][0]]
         for input_key in ["prompt_text", "prompt_audio"]:
             if input_key in data:
-                model_inputs.append(data[input_key][0].cuda())
+                model_inputs.append(data[input_key][0])
+        for i, e in enumerate(model_inputs):
+            model_inputs[i] = torch.from_numpy(e).cuda()
         l.info(f"model_inputs: {model_inputs}")
         ret_val = model.decode_codec(*model_inputs) # [1, T, 1]
         ret_val = ret_val.squeeze(-1) # [1,T]
