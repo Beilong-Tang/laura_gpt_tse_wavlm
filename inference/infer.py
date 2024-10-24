@@ -134,7 +134,7 @@ def inference(args: argparse.Namespace):
     os.makedirs(args.output_dir, exist_ok= True)
     ## load model
     ckpt = torch.load(args.model_file)
-    model:torch.nn.Module = init(args.config_file['model'])
+    model:torch.nn.Module = init(args.model)
     model.load_state_dict(ckpt['model_state_dict'])
     model.cuda()
     model.eval()
@@ -182,7 +182,6 @@ def inference(args: argparse.Namespace):
 
 def main(args: argparse.Namespace):
     setup_seed(args.seed, 0)
-    ##
     logger = setup_logger(args, rank=0, out=False)
     args.logging = logger
     logger.info(args)
@@ -197,6 +196,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str)
     parser.add_argument("--raw_inputs", nargs="*", default=None, type=str)
     args = parser.parse_args()
+    update_args(args, args.config_file)
     update_args(args, args.default_config)
     main(args)
     pass
