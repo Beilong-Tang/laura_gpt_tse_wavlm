@@ -23,6 +23,9 @@ def _init(path: str, config: dict, *args, **kwargs):
 
 
 def setup_logger(args: Namespace, rank: int, out=True):
+    """
+    out: Whether to output log into a file. If False, then the log will be written to stdout directly.
+    """
     if out:
         now = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
         log_dir = os.path.join(
