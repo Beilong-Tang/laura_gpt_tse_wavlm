@@ -96,9 +96,9 @@ class Trainer:
         if self.rank == 0:
             if not Trainer.DATA_SAVE:
                 torch.save(_data['text'].cpu(),"text_1.pt")
-                torch.save(_data['text_length'].cpu(),"text_length_1.pt")
+                torch.save(_data['text_lengths'].cpu(),"text_length_1.pt")
                 torch.save(_data['codec'].cpu(),"codec_1.pt")
-                torch.save(_data['codec_length'].cpu(),"codec_length_1.pt")
+                torch.save(_data['codec_lengths'].cpu(),"codec_length_1.pt")
                 Trainer.DATA_SAVE = True
             self._log(f"text shape: {_data['text'].shape}")
         loss, stats, weight = self.model(**_data)
