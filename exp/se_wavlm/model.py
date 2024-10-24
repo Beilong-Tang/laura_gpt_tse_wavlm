@@ -498,7 +498,7 @@ class LauraGenModel(AbsESPnetModel):
     def decode_codec(
             self,
             text: torch.Tensor,
-            text_lengths: torch.Tensor,
+            text_lengths: torch.Tensor = None,
             max_length: int = 30 * 25,
             sampling: Union[bool, int, float] = True,
             beam_size: int = 1,
@@ -509,6 +509,9 @@ class LauraGenModel(AbsESPnetModel):
         text_lengths: [1]
         Return out tokens: [1, T ,n_q]
         """
+        ## Not sure if this is right.
+        if text_lengths is None:
+            text_lengths = torch.Tensor([text.size(1)], device= text.device, dtype = torch.long)
         device = text.device
         out_tokens = [] if continual is None else deepcopy(continual)
         sos_eos_emb = self.lm_embedding(torch.tensor([[self.sos_eos]], dtype=torch.int64, device=device)) # [1,1]
