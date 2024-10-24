@@ -511,7 +511,7 @@ class LauraGenModel(AbsESPnetModel):
         """
         ## Not sure if this is right.
         if text_lengths is None:
-            text_lengths = torch.Tensor([text.size(1)], device= text.device, dtype = torch.long)
+            text_lengths = torch.tensor([text.size(1)], device= text.device, dtype = torch.long)
         device = text.device
         out_tokens = [] if continual is None else deepcopy(continual)
         sos_eos_emb = self.lm_embedding(torch.tensor([[self.sos_eos]], dtype=torch.int64, device=device)) # [1,1]
