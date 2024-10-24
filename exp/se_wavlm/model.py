@@ -505,18 +505,19 @@ class LauraGenModel(AbsESPnetModel):
             continual: List = None,
     ) -> torch.Tensor:
         """
-        text: [1, T, ]
+        text: [T,emb ]
         text_lengths: [1]
         Return out tokens: [1, T ,n_q]
         """
         ## Not sure if this is right.
+        text = text.unsqueeze(0) # [1, T, emb]
         if text_lengths is None:
             text_lengths = torch.tensor([text.size(1)], device= text.device, dtype = torch.long)
         device = text.device
         out_tokens = [] if continual is None else deepcopy(continual)
-        sos_eos_emb = self.lm_embedding(torch.tensor([[self.sos_eos]], dtype=torch.int64, device=device)) # [1,1]
-        task_id_emb = self.lm_embedding(torch.tensor([[self.task_id]], dtype=torch.int64, device=device)) # [1,1]
-        prompt = torch.cat([sos_eos_emb, text, task_id_emb], dim=1) # [1, T + 2]
+        sos_eos_emb = self.lm_embedding(torch.tensor([[self.sos_eos]], dtype=torch.int64, device=device)) # [1,1,emb]
+        task_id_emb = self.lm_embedding(torch.tensor([[self.task_id]], dtype=torch.int64, device=device)) # [1,1,emb]
+        prompt = torch.cat([sos_eos_emb, text, task_id_emb], dim=1) # [1, T + 2, emb]
         state = None
         for i in range(max_length):
             if len(out_tokens) > 0:
