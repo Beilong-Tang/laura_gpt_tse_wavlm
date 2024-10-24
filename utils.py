@@ -6,9 +6,21 @@ import random
 import numpy as np
 import torch
 import importlib
+from collections import OrderedDict
 
 from argparse import Namespace
 
+
+def strip_ddp_state_dict(state_dict):
+    # Create a new state dict without DDP keys
+    new_state_dict = OrderedDict()
+    for k, v in state_dict.items():
+        if k.startswith("module."):
+            # Remove "module." prefix
+            new_state_dict[k[7:]] = v
+        else:
+            new_state_dict[k] = v
+    return new_state_dict
 
 def init(config, *args, **kwargs):
     assert "type" in config 

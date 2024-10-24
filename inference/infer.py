@@ -16,7 +16,10 @@ from typing import Optional
 
 from funcodec.bin.text2audio_inference import Text2Audio, save_audio
 from funcodec.tasks.text2audio_generation import Text2AudioGenTask
-from utils import setup_logger, update_args, setup_seed, init
+from utils import setup_logger, update_args, setup_seed, init, strip_ddp_state_dict
+
+from decoder.wavlm_kmeans_conformer import WavLMKmeansConformer
+
 
 
 def inference_func(
@@ -135,9 +138,15 @@ def inference(args: argparse.Namespace):
     model.eval()
     l.info("model successfully intialized")
     ## load decoder:
-    
-    
-
+    d_conf = args.decoder
+    decoder = WavLMKmeansConformer(kmeans_path= d_conf['kmeans_ckpt'], 
+                                   kernel_size= d_conf['kernel_size'],
+                                   hifi_path  = d_conf['hifi_path'], 
+                                   hifi_config= d_conf['hifi_config'])
+    d_ckpt = strip_ddp_state_dict(torch.load(d_conf['conformer_ckpt'])['model_state_dict'])
+    decoder.load_state_dict(d_ckpt, strict=False)
+    decoder.cuda()
+    decoder.eval()
     ## init data
     loader = Text2AudioGenTask.build_streaming_iterator(
         args.data_path_and_name_and_type,
@@ -154,29 +163,29 @@ def inference(args: argparse.Namespace):
     )
     l.info("data initialized successfully")
     for keys, data in loader:
-            key = keys[0]
-            logging.info(f"generating {key}")
-            model_inputs = [data["text"][0]]
-            for input_key in ["prompt_text", "prompt_audio"]:
-                if input_key in data:
-                    model_inputs.append(data[input_key][0])
-            l.info(f"model_inputs: {model_inputs}")
-            ret_val = model.decode_codec(*model_inputs) # [1, T, 1]
-            l.info(f"ret_val: {ret_val.shape}")
-
-            item = {"key": key, "value": ret_val}
-            if output_path is not None:
-                for suffix, wave in ret_val.items():
-                    file_name = key.replace(".wav", "") + "_" + suffix + ".wav"
-                    save_path = os.path.join(output_path, file_name)
-                    save_audio(
-                        wave[0],
-                        save_path,
-                        rescale=True,
-                        sample_rate=my_model.codec_model.model.quantizer.sampling_rate,
-                    )
-            else:
-                result_list.append(item)
+        key = keys[0]
+        logging.info(f"generating {key}")
+        model_inputs = [data["text"][0]]
+        for input_key in ["prompt_text", "prompt_audio"]:
+            if input_key in data:
+                model_inputs.append(data[input_key][0])
+        l.info(f"model_inputs: {model_inputs}")
+        ret_val = model.decode_codec(*model_inputs) # [1, T, 1]
+        l.info(f"ret_val: {ret_val.shape}")
+        item = {"key": key, "value": ret_val}
+        
+        if output_path is not None:
+            for suffix, wave in ret_val.items():
+                file_name = key.replace(".wav", "") + "_" + suffix + ".wav"
+                save_path = os.path.join(output_path, file_name)
+                save_audio(
+                    wave[0],
+                    save_path,
+                    rescale=True,
+                    sample_rate=my_model.codec_model.model.quantizer.sampling_rate,
+                )
+        else:
+            result_list.append(item)
 
 def main(args: argparse.Namespace):
 
