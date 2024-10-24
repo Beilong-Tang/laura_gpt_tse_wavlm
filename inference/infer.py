@@ -131,9 +131,11 @@ def inference_func(
 
 def inference(args: argparse.Namespace):
     l:logging.Logger = args.logging
+    os.makedirs(args.output_dir, exist_ok= True)
     ## load model
+    ckpt = torch.load(args.model_file)
     model:torch.nn.Module = init(args.config_file['model'])
-    model.load_state_dict(args.ckpt['model_state_dict'])
+    model.load_state_dict(ckpt['model_state_dict'])
     model.cuda()
     model.eval()
     l.info("model successfully intialized")
@@ -165,46 +167,26 @@ def inference(args: argparse.Namespace):
     for keys, data in loader:
         key = keys[0]
         logging.info(f"generating {key}")
-        model_inputs = [data["text"][0]]
+        model_inputs = [data["text"][0].cuda()]
         for input_key in ["prompt_text", "prompt_audio"]:
             if input_key in data:
-                model_inputs.append(data[input_key][0])
+                model_inputs.append(data[input_key][0].cuda())
         l.info(f"model_inputs: {model_inputs}")
         ret_val = model.decode_codec(*model_inputs) # [1, T, 1]
-        
+        ret_val = ret_val.squeeze(-1) # [1,T]
         l.info(f"ret_val: {ret_val.shape}")
-        item = {"key": key, "value": ret_val}
-
-        if output_path is not None:
-            for suffix, wave in ret_val.items():
-                file_name = key.replace(".wav", "") + "_" + suffix + ".wav"
-                save_path = os.path.join(output_path, file_name)
-                save_audio(
-                    wave[0],
-                    save_path,
-                    rescale=True,
-                    sample_rate=my_model.codec_model.model.quantizer.sampling_rate,
-                )
-        else:
-            result_list.append(item)
+        audio = decoder.inference(ret_val) #[1,T']
+        save_path = os.path.join(args.output_dir, key+".wav")
+        save_audio(audio, save_path, 16000, rescale= True)
+    l.info("inferencing is done!")
 
 def main(args: argparse.Namespace):
-
-    ## TODO: delete this code and write the code in the train.py
     setup_seed(args.seed, 0)
     ##
     logger = setup_logger(args, rank=0, out=False)
-
-    ckpt = torch.load(args.model_file, map_location="cuda")
-    args.ckpt = ckpt
     args.logging = logger
     logger.info(args)
     inference(args)
-    forward = inference_func(**vars(args))
-    # forward(data_path_and_name_and_type= args.)
-    forward(args.data_path_and_name_and_type, args.raw_inputs)
-
-    pass
 
 
 if __name__ == "__main__":
