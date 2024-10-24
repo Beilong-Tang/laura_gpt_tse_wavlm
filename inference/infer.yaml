@@ -1,5 +1,5 @@
 data_path_and_name_and_type: [
-        "/public/home/qinxy/bltang/data/LibriMix/Libri2Mix/Libri2Mix/wav16k/min/wavlm_6/test/clean/all.scp",
+        "/public/home/qinxy/bltang/data/LibriMix/Libri2Mix/Libri2Mix/wav16k/min/wavlm_6/test/mix/all.scp",
         "text",
         "npy"
     ]
