@@ -171,9 +171,10 @@ def inference(args: argparse.Namespace):
                 model_inputs.append(data[input_key][0])
         l.info(f"model_inputs: {model_inputs}")
         ret_val = model.decode_codec(*model_inputs) # [1, T, 1]
+        
         l.info(f"ret_val: {ret_val.shape}")
         item = {"key": key, "value": ret_val}
-        
+
         if output_path is not None:
             for suffix, wave in ret_val.items():
                 file_name = key.replace(".wav", "") + "_" + suffix + ".wav"
