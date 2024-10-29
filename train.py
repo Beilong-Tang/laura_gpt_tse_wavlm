@@ -2,16 +2,13 @@ import argparse
 import os
 import random
 import numpy as np
+from pathlib import Path
 
 import torch
 import torch.multiprocessing as mp
 import torch.distributed as dist
 import torch.nn as nn
 from torch.nn.parallel import DistributedDataParallel as DDP
-
-from funcodec.tasks.text2audio_generation import Text2AudioGenTask
-from funcodec.schedulers.warmup_lr import WarmupLR
-from funcodec.torch_utils.load_pretrained_model import load_pretrained_model
 
 from _funcodec import init_sequence_iter_factory
 
@@ -74,7 +71,9 @@ def main(rank, args):
     val_iter = init_sequence_iter_factory(args, rank, "valid")
 
     ## ckpt_dir
-    ckpt_dir = os.path.basename(args.config).replace(".yaml", "")
+    config_name = os.path.basename(args.config).replace(".yaml", "")
+    ckpt_dir = Path(args.config).absolute().parent.parent.joinpath("ckpt").joinpath(config_name)
+    os.makedirs(ckpt_dir, exist_ok= True)
 
     trainer = Trainer(
         model,
@@ -83,7 +82,7 @@ def main(rank, args):
         optim,
         scheduler,
         config=args,
-        ckpt_dir=f"./ckpt/{ckpt_dir}",
+        ckpt_dir=ckpt_dir,
         rank=rank,
         logger=l,
     )
@@ -103,7 +102,6 @@ if __name__ == "__main__":
     update_args(args,args.config)
     log = setup_logger(args, rank = 0)
     log.info(f"torch cuda available: {torch.cuda.is_available()}")
-
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
     args.gpus = [int(i) for i in args.gpus.split(",")]
     args.ngpu = len(args.gpus)
