@@ -395,17 +395,6 @@ class LauraGenModel(AbsESPnetModel):
     def _pad_two(self, t1, t1_lens, t2, t2_lens):
         """
         Pad two tensors into a single one
-        Example:
-        >>> t1 = torch.Tensor([[1,2,3,0,0], [-1,-2,0,0,0],[100,0,0,0,0]])
-        >>> t1_len = torch.Tensor([3,2,1]).long()
-        >>> t2 = torch.Tensor([[10,20,30,40,0], [-10,-20,0,0,0],[1000,0,0,0,0]])
-        >>> t2_len = torch.Tensor([4,2,1]).long()
-        >>> self._pad_two(t1,t1_len,t2,t2_len)
-        >>> (tensor([[   1.,    2.,    3.,   10.,   20.,   30.,   40.],
-                    [  -1.,   -2.,  -10.,  -20.,    0.,    0.,    0.],
-                    [ 100., 1000.,    0.,    0.,    0.,    0.,    0.]]),
-            tensor([7, 4, 2]))
-
         Args:
             t1: (B, L, *)
             t1_len: (B,)
@@ -414,7 +403,18 @@ class LauraGenModel(AbsESPnetModel):
         Returns:
             res: (B, L,*)
             res_len: (B)
+        Example:
+        >>> t1 = torch.Tensor([[1, 2, 3, 0, 0], [-1, -2, 0, 0, 0], [100, 0, 0, 0, 0]])
+        >>> t1_len = torch.Tensor([3, 2, 1]).long()
+        >>> t2 = torch.Tensor([[10, 20, 30, 40, 0], [-10, -20, 0, 0, 0], [1000, 0, 0, 0, 0]])
+        >>> t2_len = torch.Tensor([4, 2, 1]).long()
+        >>> _pad_two(t1, t1_len, t2, t2_len)
+        >>> (tensor([[   1.,    2.,    3.,   10.,   20.,   30.,   40.],
+                    [  -1.,   -2.,  -10.,  -20.,    0.,    0.,    0.],
+                    [ 100., 1000.,    0.,    0.,    0.,    0.,    0.]]),
+            tensor([7, 4, 2]))
         """
+
         inputs_list = []
         for i, (t1_l, t2_l) in enumerate(zip(t1_lens, t2_lens)):
             one_input = torch.cat([t1[i, :t1_l], t2[i,:t2_l]], dim = 0) # [t1+t2, E]
@@ -445,10 +445,9 @@ class LauraGenModel(AbsESPnetModel):
         if aux is not None:
             assert aux_lengths is not None
             aux = aux[:,:aux_lengths.max()]
-            text_lengths = text_lengths + aux_lengths
-
-        
-
+            ## Add aux before mix and before the target
+            text, text_lengths = self._pad_two(aux, aux_lengths, text,text_lengths)
+            codec, codec_lengths = self._pad_two(aux, aux_lengths, codec, codec_lengths)
         codec = self.kmeans(codec).unsqueeze(-1) # [B,L, 1]
         # 1. encode text
         text, text_lengths = self.encode(text, text_lengths) # Conformer Module [B,L,D] -> [B,L,D]
