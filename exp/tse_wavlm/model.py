@@ -395,13 +395,24 @@ class LauraGenModel(AbsESPnetModel):
     def _pad_two(self, t1, t1_lens, t2, t2_lens):
         """
         Pad two tensors into a single one
+        Example:
+        >>> t1 = torch.Tensor([[1,2,3,0,0], [-1,-2,0,0,0],[100,0,0,0,0]])
+        >>> t1_len = torch.Tensor([3,2,1]).long()
+        >>> t2 = torch.Tensor([[10,20,30,40,0], [-10,-20,0,0,0],[1000,0,0,0,0]])
+        >>> t2_len = torch.Tensor([4,2,1]).long()
+        >>> self._pad_two(t1,t1_len,t2,t2_len)
+        >>> (tensor([[   1.,    2.,    3.,   10.,   20.,   30.,   40.],
+                    [  -1.,   -2.,  -10.,  -20.,    0.,    0.,    0.],
+                    [ 100., 1000.,    0.,    0.,    0.,    0.,    0.]]),
+            tensor([7, 4, 2]))
+
         Args:
-            t1: (B, L, E)
+            t1: (B, L, *)
             t1_len: (B,)
-            t2: (B, L, E) # The continuous feature
+            t2: (B, L, *) # The continuous feature
             t2_len: (B,)
         Returns:
-            res: (B, L,E)
+            res: (B, L,*)
             res_len: (B)
         """
         inputs_list = []
