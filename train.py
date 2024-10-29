@@ -51,7 +51,6 @@ def main(rank, args):
     l.info("logging initialized succesully")
     l.info(args)
     l.info(f"rank {rank} of world_size {len(args.gpus)} started...")
-    l.info(f"{torch.cuda.is_available()}")
     setup(rank, len(args.gpus), args.dist_backend)
     args.gpu = args.gpus[rank]
     torch.cuda.set_device(args.gpu)
@@ -102,9 +101,8 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=str, default=None, help="path to yaml config")
     args = parser.parse_args()
     update_args(args,args.config)
-    print(f"cuda available {torch.cuda.is_available()}")
     log = setup_logger(args, rank = 0)
-    log.info(f"torch cuda: {torch.cuda.is_available()}")
+    log.info(f"torch cuda available: {torch.cuda.is_available()}")
 
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
     args.gpus = [int(i) for i in args.gpus.split(",")]
