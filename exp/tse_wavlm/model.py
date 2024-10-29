@@ -414,7 +414,6 @@ class LauraGenModel(AbsESPnetModel):
                     [ 100., 1000.,    0.,    0.,    0.,    0.,    0.]]),
             tensor([7, 4, 2]))
         """
-
         inputs_list = []
         for i, (t1_l, t2_l) in enumerate(zip(t1_lens, t2_lens)):
             one_input = torch.cat([t1[i, :t1_l], t2[i,:t2_l]], dim = 0) # [t1+t2, E]
