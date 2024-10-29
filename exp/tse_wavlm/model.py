@@ -392,18 +392,24 @@ class LauraGenModel(AbsESPnetModel):
         return prob * valid_mask
     
 
-    def _pad_two(self, t1, t1_len, t2, t2_len ):
+    def _pad_two(self, t1, t1_lens, t2, t2_lens):
         """
         Pad two tensors into a single one
         Args:
-            text: (B, L, E)
-            text_lengths: (B,)
-            codec: (B, L, E) # The continuous feature
-            codec_lengths: (B,)
-            aux: (B, L, E) # The continuous auxliary
-            aux_lengths: (B,)
+            t1: (B, L, E)
+            t1_len: (B,)
+            t2: (B, L, E) # The continuous feature
+            t2_len: (B,)
+        Returns:
+            res: (B, L,E)
+            res_len: (B)
         """
-        pass
+        inputs_list = []
+        for i, (t1_l, t2_l) in enumerate(zip(t1_lens, t2_lens)):
+            one_input = torch.cat([t1[i, :t1_l], t2[i,:t2_l]], dim = 0) # [t1+t2, E]
+            inputs_list.append(one_input)
+        inputs_list = pad_list(inputs_list, 0.0) # [B,T1+T2,E]
+        return inputs_list, t1_lens + t2_lens
     
     def forward(
             self,
