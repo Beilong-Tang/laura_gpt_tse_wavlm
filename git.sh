@@ -3,7 +3,6 @@
 ####################################
 # List untracked files and calculate their sizes
 # untracked_files=$(git ls-files --others --exclude-standard)
-
 message="$*"
 
 if [ -z "$message" ]; then

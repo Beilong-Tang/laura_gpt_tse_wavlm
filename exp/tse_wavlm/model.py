@@ -411,8 +411,11 @@ class LauraGenModel(AbsESPnetModel):
         """
         text = text[:, :text_lengths.max()]
         codec = codec[:, :codec_lengths.max()]
-        aux = aux[:,:aux_lengths.max()]
-
+        if aux is not None:
+            assert aux_lengths is not None
+            aux = aux[:,:aux_lengths.max()]
+            text_lengths = text_lengths + aux_lengths
+        
 
         codec = self.kmeans(codec).unsqueeze(-1) # [B,L, 1]
         # 1. encode text
