@@ -391,6 +391,20 @@ class LauraGenModel(AbsESPnetModel):
         # masking out the padding part
         return prob * valid_mask
     
+
+    def _pad_two(self, t1, t1_len, t2, t2_len ):
+        """
+        Pad two tensors into a single one
+        Args:
+            text: (B, L, E)
+            text_lengths: (B,)
+            codec: (B, L, E) # The continuous feature
+            codec_lengths: (B,)
+            aux: (B, L, E) # The continuous auxliary
+            aux_lengths: (B,)
+        """
+        pass
+    
     def forward(
             self,
             text: torch.Tensor,
@@ -415,6 +429,7 @@ class LauraGenModel(AbsESPnetModel):
             assert aux_lengths is not None
             aux = aux[:,:aux_lengths.max()]
             text_lengths = text_lengths + aux_lengths
+
         
 
         codec = self.kmeans(codec).unsqueeze(-1) # [B,L, 1]
