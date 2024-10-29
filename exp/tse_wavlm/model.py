@@ -166,7 +166,7 @@ class LauraGenModel(AbsESPnetModel):
             outs = self.text_enc_out_layer(outs)
         else:
             if text.shape[-1] == self.codebook_dim:
-                outs, out_lens = text, text_lengths
+                outs, out_lens = text, text_lengths 
             else:
                 outs = self.text_enc_out_layer(text)
                 out_lens = text_lengths
@@ -397,6 +397,8 @@ class LauraGenModel(AbsESPnetModel):
             text_lengths: torch.Tensor,
             codec: torch.Tensor,
             codec_lengths: torch.Tensor,
+            aux:torch.Tensor = None,
+            aux_lengths: torch.Tensor = None
     ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor], torch.Tensor]:
         """
         Args:
@@ -404,9 +406,13 @@ class LauraGenModel(AbsESPnetModel):
             text_lengths: (B,)
             codec: (B, L, E) # The continuous feature
             codec_lengths: (B,)
+            aux: (B, L, E) # The continuous auxliary
+            aux_lengths: (B,)
         """
         text = text[:, :text_lengths.max()]
-        codec = codec[:, :codec_lengths.max()].long()
+        codec = codec[:, :codec_lengths.max()]
+        aux = aux[:,:aux_lengths.max()]
+
 
         codec = self.kmeans(codec).unsqueeze(-1) # [B,L, 1]
         # 1. encode text

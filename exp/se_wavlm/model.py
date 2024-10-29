@@ -406,7 +406,7 @@ class LauraGenModel(AbsESPnetModel):
             codec_lengths: (B,)
         """
         text = text[:, :text_lengths.max()]
-        codec = codec[:, :codec_lengths.max()].long()
+        codec = codec[:, :codec_lengths.max()]
 
         codec = self.kmeans(codec).unsqueeze(-1) # [B,L, 1]
         # 1. encode text
