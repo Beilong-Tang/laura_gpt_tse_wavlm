@@ -13,49 +13,6 @@ from funcodec.losses.label_smoothing_loss import LabelSmoothingLoss
 from copy import deepcopy
 from models.kmeans import KMeansQuantizer
 
-
-class QuantizerCodebook(torch.nn.Module):
-    def __init__(
-            self,
-            num_quantizers,
-            codebook_size,
-            codebook_dim
-    ):
-        super().__init__()
-        self.num_quantizers = num_quantizers
-        self.codebook_size = codebook_size
-        self.codebook_dim = codebook_dim
-        embed = torch.zeros(num_quantizers, codebook_size, codebook_dim)
-        self.register_buffer("embed", embed)
-        codec_index_shift = 1024 * torch.arange(32, dtype=torch.float32)[None, None, :]
-        self.register_buffer("codec_index_shift", codec_index_shift)
-
-    def save_embedding(self, file_name, dense_emb, emb_lengths):
-        import kaldiio
-        wav_writer = kaldiio.WriteHelper("ark,scp,f:{}.ark,{}.scp".format(file_name, file_name))
-        dense_emb = dense_emb.cpu().numpy()
-        for i in range(min(dense_emb.shape[0], 10)):
-            wav_writer(str(i), dense_emb[i, :emb_lengths[i]])
-
-        wav_writer.close()
-
-    def forward(self, codec: torch.Tensor, codec_lengths, return_subs=False):
-        if len(codec.shape) == 2:
-            codec = codec.unsqueeze(-1)
-        bz, tt, nq = codec.shape[0], codec.shape[1], codec.shape[2]
-        codec_mask = ~make_pad_mask(codec_lengths, maxlen=codec.shape[1]).unsqueeze(-1).to(codec.device)
-        codec = codec * codec_mask + self.codec_index_shift[:, :, :nq].long()
-        codec = codec.reshape(-1, nq)
-        emb = self.embed.reshape(-1, self.codebook_dim)
-        codec_emb = F.embedding(codec, emb)  # (BT, Nq, D)
-        dense_emb = codec_emb.sum(dim=1)
-        dense_emb = dense_emb.reshape(bz, tt, self.codebook_dim)
-        if return_subs:
-            sub_embs = codec_emb.reshape(bz, tt, nq, self.codebook_dim) * codec_mask.unsqueeze(-2)
-            return dense_emb * codec_mask, sub_embs
-        return dense_emb * codec_mask
-
-
 class LauraGenModel(AbsESPnetModel):
     """
     This class implement the LauraGPT-style audio generation model [1]. It can be trained for
