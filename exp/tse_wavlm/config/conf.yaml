@@ -101,6 +101,6 @@ log_interval: 10
 epoch: 50
 
 ## Add for argument type checking, Does not matter here
-allow_variable_data_keys: false
+allow_variable_data_keys: true
 drop_last: false
 fold_length: []
