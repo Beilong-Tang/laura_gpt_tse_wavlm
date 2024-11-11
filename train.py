@@ -96,7 +96,7 @@ if __name__ == "__main__":
         "--dist-backend", default="nccl", type=str, help="distributed backend"
     )
     parser.add_argument("--gpus", default="0,1,2,3", type=str, help="gpus")
-    parser.add_argument("--log", default="./log", type=str, help="Output of the log")
+    parser.add_argument("--log", default="./log", type=str, help="Output of the log", required= True)
     parser.add_argument("--config", type=str, default=None, help="path to yaml config")
     args = parser.parse_args()
     update_args(args,args.config)
