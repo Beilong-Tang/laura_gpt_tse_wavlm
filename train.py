@@ -50,6 +50,7 @@ def main(rank, args):
     l.info(f"rank {rank} of world_size {len(args.gpus)} started...")
     setup(rank, len(args.gpus), args.dist_backend)
     args.gpu = args.gpus[rank]
+    print(f"gpu id: {args.gpu}")
     torch.cuda.set_device(args.gpu)
     torch.cuda.empty_cache()
     setup_seed(args.seed, rank)
@@ -102,7 +103,7 @@ if __name__ == "__main__":
     update_args(args,args.config)
     log = setup_logger(args, rank = 0)
     log.info(f"torch cuda available: {torch.cuda.is_available()}")
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
+    # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
     args.gpus = [int(i) for i in args.gpus.split(",")]
     args.ngpu = len(args.gpus)
     mp.spawn(main, args=(args,), nprocs=len(args.gpus), join=True)
