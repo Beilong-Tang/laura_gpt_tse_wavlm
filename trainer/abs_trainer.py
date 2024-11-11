@@ -100,7 +100,7 @@ class Trainer:
                 torch.save(_data['codec'].cpu(),"codec_1.pt")
                 torch.save(_data['codec_lengths'].cpu(),"codec_length_1.pt")
                 Trainer.DATA_SAVE = True
-            print(f"text shape: {_data['text'].shape}")
+                print(f"text shape: {_data['text'].shape}")
         loss, stats, weight = self.model(**_data)
         loss = apply_weight_average(loss, stats, weight)
         loss.backward()
