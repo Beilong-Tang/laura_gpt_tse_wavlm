@@ -1,26 +1,36 @@
-train_shape_file: ["/public/home/qinxy/bltang/data/LibriMix/Libri2Mix/Libri2Mix/wav16k/min/wavlm_6/train/clean/shape.scp"]
-valid_shape_file: ["/public/home/qinxy/bltang/data/LibriMix/Libri2Mix/Libri2Mix/wav16k/min/wavlm_6/test/clean/shape.scp"]
+train_shape_file: ["/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/train/all/clean/shape.scp"]
+valid_shape_file: ["/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/dev/clean/shape.scp"]
 train_data_path_and_name_and_type: [
     [
-        "/public/home/qinxy/bltang/data/LibriMix/Libri2Mix/Libri2Mix/wav16k/min/wavlm_6/train/mix/all.scp",
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/train/all/mix/all.scp",
         "text",
         "npy"
     ],
     [
-        "/public/home/qinxy/bltang/data/LibriMix/Libri2Mix/Libri2Mix/wav16k/min/wavlm_6/train/clean/all.scp",
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/train/all/clean/all.scp",
         "codec",
+        "npy"
+    ]
+    [
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/train/all/aux/all.scp",
+        "aux",
         "npy"
     ]
 ]
 valid_data_path_and_name_and_type: [
-     [
-        "/public/home/qinxy/bltang/data/LibriMix/Libri2Mix/Libri2Mix/wav16k/min/wavlm_6/test/mix/all.scp",
+    [
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/dev/mix/all.scp",
         "text",
         "npy"
     ],
     [
-        "/public/home/qinxy/bltang/data/LibriMix/Libri2Mix/Libri2Mix/wav16k/min/wavlm_6/test/clean/all.scp",
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/dev/clean/all.scp",
         "codec",
+        "npy"
+    ]
+    [
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/dev/aux/all.scp",
+        "aux",
         "npy"
     ]
 ]
@@ -28,7 +38,7 @@ valid_data_path_and_name_and_type: [
 
 input_size: &input_size 1000
 input_dim: &input_dim 1024 # Wavlm Input Dimension
-kmeans_ckpt: &kmeans_ckpt /public/home/qinxy/bltang/kmeans/LibriSpeech_wavlm_k1000_L7.pt
+kmeans_ckpt: &kmeans_ckpt /DKUdata/tangbl/wavlm_kmeans_hifi/ckpt/LibriSpeech_wavlm_k1000_L7.pt
 use_preprocessor: false
 audio_max_duration: 60
 codec_token_rate: 25
@@ -37,7 +47,7 @@ seed: 1234
 
 ## Model
 model:
-    type: exp.se_wavlm.model.LauraGenModel
+    type: exp.tse_wavlm.model.LauraGenModel
     args:
         kmeans_ckpt: *kmeans_ckpt
         codec_sampling_ratio: 0.5
