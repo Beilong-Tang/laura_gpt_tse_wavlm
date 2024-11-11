@@ -83,8 +83,8 @@ scheduler:
 
 ### Training related
 batch_type: length
-batch_bins: 5120
-batch_size: 80 # This does not matter here
+batch_bins: 2560
+batch_size: 40 # This does not matter here
 sort_in_batch: descending
 sort_batch: descending
 num_workers: 8
