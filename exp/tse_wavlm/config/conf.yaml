@@ -10,7 +10,7 @@ train_data_path_and_name_and_type: [
         "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/train/all/clean/all.scp",
         "codec",
         "npy"
-    ]
+    ],
     [
         "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/train/all/aux/all.scp",
         "aux",
@@ -27,7 +27,7 @@ valid_data_path_and_name_and_type: [
         "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/dev/clean/all.scp",
         "codec",
         "npy"
-    ]
+    ],
     [
         "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/dev/aux/all.scp",
         "aux",
