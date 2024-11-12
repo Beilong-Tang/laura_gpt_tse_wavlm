@@ -156,7 +156,7 @@ def inference(args: argparse.Namespace):
     else:
         res = []
         for path, name, _type in args.data_path_and_name_and_type:
-            res.append((path, name, type))
+            res.append((path, name, _type))
         print(res)
         args.data_path_and_name_and_type = res
     loader = Text2AudioGenTask.build_streaming_iterator(
