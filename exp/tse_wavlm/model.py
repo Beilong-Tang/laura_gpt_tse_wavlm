@@ -513,7 +513,8 @@ class LauraGenModel(AbsESPnetModel):
 
         text = text.unsqueeze(0) # [1, T, emb]
         if aux is not None:
-            text = torch.cat([text, aux])
+            aux = aux.unsqueeze(0) # [1, T, emb]
+            text = torch.cat([text, aux], dim = 1)
         if text_lengths is None:
             text_lengths = torch.tensor([text.size(1)], device= text.device, dtype = torch.long)
         else:

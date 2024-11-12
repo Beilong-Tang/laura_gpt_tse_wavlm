@@ -183,6 +183,7 @@ def inference(args: argparse.Namespace):
         for i, e in enumerate(model_inputs):
             model_inputs[i] = torch.from_numpy(e).cuda()
         l.info(f"model_inputs: {model_inputs}")
+        l.info(f"model_inputs shape: {model_inputs}")
         ret_val = model.decode_codec(*model_inputs) # [1, T, 1]
         ret_val = ret_val.squeeze(-1) # [1,T]
         l.info(f"ret_val: {ret_val.shape}")
