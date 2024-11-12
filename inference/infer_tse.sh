@@ -1,0 +1,1 @@
+python -u inference/infer.py --config_file exp/tse_wavlm/config/conf.yaml --model_file /DKUdata/tangbl/laura_gpt_tse/exp/tse_wavlm/ckpt/conf/best.pth --output_dir /DKUdata/tangbl/laura_gpt_tse/output/conf --default_config inference/infer.yaml --device cuda:4
