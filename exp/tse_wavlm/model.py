@@ -494,21 +494,31 @@ class LauraGenModel(AbsESPnetModel):
     def decode_codec(
             self,
             text: torch.Tensor,
+            aux: torch.Tensor,
             text_lengths: torch.Tensor = None,
+            aux_lengths: torch.Tensor = None,
             max_length: int = 30 * 25,
             sampling: Union[bool, int, float] = True,
             beam_size: int = 1,
             continual: List = None,
     ) -> torch.Tensor:
         """
-        text: [T,emb ]
+        text: [T, emb]
+        aux: [T, emb]
         text_lengths: [1]
+        aux_lengths: [1]
         Return out tokens: [1, T ,n_q]
         """
         ## Not sure if this is right.
+
         text = text.unsqueeze(0) # [1, T, emb]
+        if aux is not None:
+            text = torch.cat([text, aux])
         if text_lengths is None:
             text_lengths = torch.tensor([text.size(1)], device= text.device, dtype = torch.long)
+        else:
+            text_lengths = text_lengths + aux_lengths
+        
         device = text.device
         out_tokens = [] if continual is None else deepcopy(continual)
         sos_eos_emb = self.lm_embedding(torch.tensor([[self.sos_eos]], dtype=torch.int64, device=device)) # [1,1,emb]
@@ -548,7 +558,7 @@ class LauraGenModel(AbsESPnetModel):
         if torch.any(torch.tensor(out_tokens[-1], dtype=torch.int64) == self.codebook_size+self.sos_eos):
             out_tokens = out_tokens[:-1]
 
-        return torch.tensor([out_tokens], dtype=torch.int64, device=device) # [1, T, n_q]
+        return torch.tensor([out_tokens], dtype=torch.int64, device=device)[:,len(aux):] # [1, T, n_q]
 
     def syn_audio(
             self,

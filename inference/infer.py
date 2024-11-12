@@ -158,7 +158,7 @@ def inference(args: argparse.Namespace):
         num_workers=0,
         preprocess_fn=None,
         collate_fn=Text2AudioGenTask.build_collate_fn(
-            None, False, raw_sequence=("text", "prompt_text")
+            None, False, raw_sequence=("text", "prompt_text", "aux")
         ),
         allow_variable_data_keys=True,
         inference=True,
@@ -167,7 +167,7 @@ def inference(args: argparse.Namespace):
     for keys, data in loader:
         key = keys[0]
         logging.info(f"generating {key}")
-        model_inputs = [data["text"][0]]
+        model_inputs = [data["text"][0], data['aux'][0]]
         for input_key in ["prompt_text", "prompt_audio"]:
             if input_key in data:
                 model_inputs.append(data[input_key][0])
@@ -197,7 +197,9 @@ if __name__ == "__main__":
     parser.add_argument("--model_file", type=str)
     parser.add_argument("--output_dir", type=str)
     parser.add_argument("--raw_inputs", nargs="*", default=None, type=str)
+    parser.add_argument("--device", default="cuda:4", type=str)
     args = parser.parse_args()
+    torch.cuda.set_device(args.device)
     update_args(args, args.config_file)
     update_args(args, args.default_config)
     main(args)
