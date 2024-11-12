@@ -174,6 +174,7 @@ def inference(args: argparse.Namespace):
     )
     l.info("data initialized successfully")
     for keys, data in loader:
+        torch.cuda.empty_cache()
         key = keys[0]
         logging.info(f"generating {key}")
         model_inputs = [data["text"][0], data['aux'][0]]
