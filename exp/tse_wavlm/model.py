@@ -558,7 +558,6 @@ class LauraGenModel(AbsESPnetModel):
         # remove eos token
         if torch.any(torch.tensor(out_tokens[-1], dtype=torch.int64) == self.codebook_size+self.sos_eos):
             out_tokens = out_tokens[:-1]
-
         return torch.tensor([out_tokens], dtype=torch.int64, device=device)[:, aux.size(1):] # [1, T, n_q]
 
     def syn_audio(

@@ -182,9 +182,13 @@ def inference(args: argparse.Namespace):
                 model_inputs.append(data[input_key][0])
         for i, e in enumerate(model_inputs):
             model_inputs[i] = torch.from_numpy(e).cuda()
-        l.info(f"model_inputs: {model_inputs}")
-        l.info(f"model_inputs shape: {model_inputs}")
+        # l.info(f"model_inputs: {model_inputs}")
+        # l.info(f"model_inputs shape: {model_inputs}")
         ret_val = model.decode_codec(*model_inputs) # [1, T, 1]
+        print(ret_val.shape)
+        if ret_val.size(1) ==0:
+            print(f"not generating audio for ret_val {key}")
+            continue
         ret_val = ret_val.squeeze(-1) # [1,T]
         l.info(f"ret_val: {ret_val.shape}")
         audio = decoder.inference(ret_val) #[1,T']
