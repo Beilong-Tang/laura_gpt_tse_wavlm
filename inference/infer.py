@@ -150,6 +150,15 @@ def inference(args: argparse.Namespace):
     decoder.cuda()
     decoder.eval()
     ## init data
+    ## Convert args.data_path_and_name_and_type to a list of tuples:
+    if len(args.data_path_and_name_and_type) == 1:
+        args.data_path_and_name_and_type = args.data_path_and_name_and_type[0]
+    else:
+        res = []
+        for path, name, _type in args.data_path_and_name_and_type:
+            res.append((path, name, type))
+        print(res)
+        args.data_path_and_name_and_type = res
     loader = Text2AudioGenTask.build_streaming_iterator(
         args.data_path_and_name_and_type,
         dtype="float32",

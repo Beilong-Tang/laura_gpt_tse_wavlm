@@ -3,14 +3,12 @@ data_path_and_name_and_type: [
         "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/test/mix/all.scp",
         "text",
         "npy"
-        
     ],
     [
         "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/test/aux/all.scp",
         "aux",
         "npy"
     ]
-
   ]
 sampling: 25
 beam_size: 1
