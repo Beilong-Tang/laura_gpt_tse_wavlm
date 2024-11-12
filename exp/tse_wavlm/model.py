@@ -514,7 +514,7 @@ class LauraGenModel(AbsESPnetModel):
         text = text.unsqueeze(0) # [1, T, emb]
         if aux is not None:
             aux = aux.unsqueeze(0) # [1, T, emb]
-            text = torch.cat([text, aux], dim = 1)
+            text = torch.cat([aux, text], dim = 1)
         if text_lengths is None:
             text_lengths = torch.tensor([text.size(1)], device= text.device, dtype = torch.long)
         else:
@@ -559,7 +559,7 @@ class LauraGenModel(AbsESPnetModel):
         if torch.any(torch.tensor(out_tokens[-1], dtype=torch.int64) == self.codebook_size+self.sos_eos):
             out_tokens = out_tokens[:-1]
 
-        return torch.tensor([out_tokens], dtype=torch.int64, device=device) # [1, T, n_q]
+        return torch.tensor([out_tokens], dtype=torch.int64, device=device)[:, aux.size(1):] # [1, T, n_q]
 
     def syn_audio(
             self,
