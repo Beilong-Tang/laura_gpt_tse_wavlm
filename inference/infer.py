@@ -187,7 +187,7 @@ def inference(args: argparse.Namespace):
         inference=True,
     )
     l.info("data initialized successfully")
-    for keys, data in tqdm.tqdm(loader):
+    for keys, data in tqdm.tqdm(loader, total = len(loader)):
         torch.cuda.empty_cache()
         key = keys[0]
         logging.info(f"generating {key}")
@@ -200,7 +200,7 @@ def inference(args: argparse.Namespace):
         # l.info(f"model_inputs: {model_inputs}")
         # l.info(f"model_inputs shape: {model_inputs}")
         # TODO: change this in the future
-        continual = model.kmeans(model_inputs[-1].unsqueeze(0)).squeeze(0).tolist() # list [T]
+        continual = model.kmeans(model_inputs[-1].unsqueeze(0)).squeeze(0).unsqueeze(-1).tolist() # list [T, 1]
         ret_val = model.decode_codec(*model_inputs, continual = continual) # [1, T, 1]
         if ret_val.size(1) ==0:
             print(f"not generating audio for ret_val {key}")

@@ -528,7 +528,7 @@ class LauraGenModel(AbsESPnetModel):
         state = None
         for i in range(max_length):
             if len(out_tokens) > 0:
-                codec_prompt = torch.tensor([out_tokens], dtype=torch.int64, device=device) #[1, T']
+                codec_prompt = torch.tensor([out_tokens], dtype=torch.int64, device=device) #[1, T', 1]
                 codec_lengths = torch.tensor([len(out_tokens)], dtype=torch.int64, device=device)
                 # if any quantizer output is eos
                 if torch.any(codec_prompt[:, -1] == (self.codebook_size+self.sos_eos)):
