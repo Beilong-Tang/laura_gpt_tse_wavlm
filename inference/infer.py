@@ -188,7 +188,7 @@ def inference(args: argparse.Namespace):
         inference=True,
     )
     l.info("data initialized successfully")
-    for keys, data in tqdm.tqdm(loader, total = len(loader)):
+    for keys, data in tqdm.tqdm(loader):
         torch.cuda.empty_cache()
         key = keys[0]
         logging.info(f"generating {key}")
