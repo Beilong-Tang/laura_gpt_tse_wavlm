@@ -161,7 +161,7 @@ def inference(args: argparse.Namespace):
         film = init(args.FiLM)
         fusion = init(args.cross_attention_model)
         decoder = init(args.ref_decoder, lm_model = lm, fusion = fusion, film = film)
-        d_ckpt = strip_ddp_state_dict(torch.load(args.decoder_ckpt)['model_state_dict'])
+        d_ckpt = strip_ddp_state_dict(torch.load(args.decoder_ckpt, map_location="cpu")['model_state_dict'])
         decoder.load_state_dict(d_ckpt, strict = False)
         decoder.cuda()
         decoder.eval()
