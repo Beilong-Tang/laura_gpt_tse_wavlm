@@ -211,7 +211,7 @@ def inference(args: argparse.Namespace):
         if args.decoder is not None:
             audio = decoder.inference(ret_val) #[1,T']
         else:
-            audio = decoder.recon_audio(model.kmeans.emb(ret_val), model_inputs[-1])
+            audio = decoder.recon_audio(model.kmeans.emb(ret_val), model_inputs[-1].unsqueeze(0))
         save_path = os.path.join(args.output_dir, key+".wav")
         save_audio(audio, save_path, 16000, rescale= True)
     l.info("inferencing is done!")
