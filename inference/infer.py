@@ -6,6 +6,7 @@ import logging
 import torch
 import librosa
 import numpy as np
+import tqdm
 
 sys.path.append(os.getcwd())
 
@@ -173,7 +174,7 @@ def inference(args: argparse.Namespace):
         inference=True,
     )
     l.info("data initialized successfully")
-    for keys, data in loader:
+    for keys, data in tqdm.tqdm(loader):
         torch.cuda.empty_cache()
         key = keys[0]
         logging.info(f"generating {key}")
@@ -185,8 +186,9 @@ def inference(args: argparse.Namespace):
             model_inputs[i] = torch.from_numpy(e).cuda()
         # l.info(f"model_inputs: {model_inputs}")
         # l.info(f"model_inputs shape: {model_inputs}")
-        ret_val = model.decode_codec(*model_inputs) # [1, T, 1]
-        print(ret_val.shape)
+        # TODO: change this in the future
+        continual = model.kmeans.emb(model_inputs[-1].unsqueeze(0)).squeeze(0).tolist() # list [T]
+        ret_val = model.decode_codec(*model_inputs, continual = continual) # [1, T, 1]
         if ret_val.size(1) ==0:
             print(f"not generating audio for ret_val {key}")
             continue
