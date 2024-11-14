@@ -19,9 +19,30 @@ continual: 1 # No continual, where 1 stands for there is continual stuff
 seed: 1234
 
 ## decoder related:
-decoder:
-  kmeans_ckpt: /DKUdata/tangbl/wavlm_kmeans_hifi/ckpt/LibriSpeech_wavlm_k1000_L7.pt
-  kernel_size: 3
-  conformer_ckpt: /DKUdata/tangbl/ml_framework_slurm/exp/conformer/conformer/ckpt/step_160000.pth
-  hifi_path: /DKUdata/tangbl/wavlm_kmeans_hifi/ckpt/g_02500000.pt
-  hifi_config: /DKUdata/tangbl/wavlm_kmeans_hifi/hifigan_config_v1_wavlm.json
+out_channels: &out_channels 1024
+cross_attention_model: 
+  type: models.modules.transformer_encoder_cross.TransformerEncoderCross
+  args:
+    num_layers: 4
+    d_model: *out_channels
+    nhead: 16
+    d_ffn: 1024
+    dropout: 0
+
+FiLM: 
+  type: models.modules.film.FiLM
+  args:
+    size: *out_channels
+  
+lm_model:
+  type: models.modules.lm.SelmTransformerDecoder
+  args:
+    num_layers: 12
+    emb_dim: *out_channels
+    is_causal: False
+
+ref_decoder: 
+  type: decoder.ref_conformer.ReferenceCrossAttention
+  args:
+    hifi_path: /DKUdata/tangbl/hifi_gan_wav_lm/hifigan/librispeech/g_02500000.pt
+    hifi_config: /DKUdata/tangbl/hifi_gan_wav_lm/hifigan/config_v1_wavlm.json

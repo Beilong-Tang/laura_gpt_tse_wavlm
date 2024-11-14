@@ -17,9 +17,11 @@ from typing import Optional
 
 from funcodec.bin.text2audio_inference import Text2Audio, save_audio
 from funcodec.tasks.text2audio_generation import Text2AudioGenTask
-from utils import setup_logger, update_args, setup_seed, init, strip_ddp_state_dict
+from utils import setup_logger, update_args, setup_seed, init, strip_ddp_state_dict, AttrDict
 
 from decoder.wavlm_kmeans_conformer import WavLMKmeansConformer
+from decoder.ref_conformer import ReferenceCrossAttention
+
 
 
 
@@ -130,8 +132,10 @@ def inference_func(
 
     return _forward
 
+@torch.no_grad()
 def inference(args: argparse.Namespace):
     l:logging.Logger = args.logging
+    args = AttrDict(**vars(args))
     os.makedirs(args.output_dir, exist_ok= True)
     ## load model
     ckpt = torch.load(args.model_file)
@@ -141,15 +145,24 @@ def inference(args: argparse.Namespace):
     model.eval()
     l.info("model successfully intialized")
     ## load decoder:
-    d_conf = args.decoder
-    decoder = WavLMKmeansConformer(kmeans_path= d_conf['kmeans_ckpt'], 
-                                   kernel_size= d_conf['kernel_size'],
-                                   hifi_path  = d_conf['hifi_path'], 
-                                   hifi_config= d_conf['hifi_config'])
-    d_ckpt = strip_ddp_state_dict(torch.load(d_conf['conformer_ckpt'])['model_state_dict'])
-    decoder.load_state_dict(d_ckpt, strict=False)
-    decoder.cuda()
-    decoder.eval()
+    if args.decoder is not None:
+        d_conf = args.decoder
+        decoder = WavLMKmeansConformer(kmeans_path= d_conf['kmeans_ckpt'], 
+                                    kernel_size= d_conf['kernel_size'],
+                                    hifi_path  = d_conf['hifi_path'], 
+                                    hifi_config= d_conf['hifi_config'])
+        d_ckpt = strip_ddp_state_dict(torch.load(d_conf['conformer_ckpt'])['model_state_dict'])
+        decoder.load_state_dict(d_ckpt, strict=False)
+        decoder.cuda()
+        decoder.eval()
+    else:
+        lm = init(args.lm_model)
+        film = init(args.FiLM)
+        fusion = init(args.cross_attention_model)
+        decoder = init(args.ref_decoder, lm_model = lm, fusion = fusion, film = film)
+        decoder.cuda()
+        decoder.eval()
+        pass
     ## init data
     ## Convert args.data_path_and_name_and_type to a list of tuples:
     if len(args.data_path_and_name_and_type) == 1:
@@ -179,22 +192,25 @@ def inference(args: argparse.Namespace):
         key = keys[0]
         logging.info(f"generating {key}")
         model_inputs = [data["text"][0], data['aux'][0]]
-        for input_key in ["prompt_text", "prompt_audio"]:
-            if input_key in data:
-                model_inputs.append(data[input_key][0])
+        # for input_key in ["prompt_text", "prompt_audio"]:
+        #     if input_key in data:
+        #         model_inputs.append(data[input_key][0])
         for i, e in enumerate(model_inputs):
             model_inputs[i] = torch.from_numpy(e).cuda()
         # l.info(f"model_inputs: {model_inputs}")
         # l.info(f"model_inputs shape: {model_inputs}")
         # TODO: change this in the future
-        continual = model.kmeans.emb(model_inputs[-1].unsqueeze(0)).squeeze(0).tolist() # list [T]
+        continual = model.kmeans(model_inputs[-1].unsqueeze(0)).squeeze(0).tolist() # list [T]
         ret_val = model.decode_codec(*model_inputs, continual = continual) # [1, T, 1]
         if ret_val.size(1) ==0:
             print(f"not generating audio for ret_val {key}")
             continue
         ret_val = ret_val.squeeze(-1) # [1,T]
         l.info(f"ret_val: {ret_val.shape}")
-        audio = decoder.inference(ret_val) #[1,T']
+        if args.decoder is not None:
+            audio = decoder.inference(ret_val) #[1,T']
+        else:
+            audio = decoder.recon_audio(model.kmeans.emb(ret_val), model_inputs[-1])
         save_path = os.path.join(args.output_dir, key+".wav")
         save_audio(audio, save_path, 16000, rescale= True)
     l.info("inferencing is done!")
