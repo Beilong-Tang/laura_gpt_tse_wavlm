@@ -156,6 +156,7 @@ def inference(args: argparse.Namespace):
         decoder.cuda()
         decoder.eval()
     else:
+        l.info("using ref decoder")
         lm = init(args.lm_model)
         film = init(args.FiLM)
         fusion = init(args.cross_attention_model)
