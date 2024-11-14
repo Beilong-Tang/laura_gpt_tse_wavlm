@@ -28,21 +28,19 @@ cross_attention_model:
     nhead: 16
     d_ffn: 1024
     dropout: 0
-
 FiLM: 
   type: models.modules.film.FiLM
   args:
     size: *out_channels
-  
 lm_model:
   type: models.modules.lm.SelmTransformerDecoder
   args:
     num_layers: 12
     emb_dim: *out_channels
     is_causal: False
-
 ref_decoder: 
   type: decoder.ref_conformer.ReferenceCrossAttention
   args:
     hifi_path: /DKUdata/tangbl/hifi_gan_wav_lm/hifigan/librispeech/g_02500000.pt
     hifi_config: /DKUdata/tangbl/hifi_gan_wav_lm/hifigan/config_v1_wavlm.json
+decoder_ckpt: /DKUdata/tangbl/ml_framework_slurm/exp/conformer_ref/ckpt/conf/best.pth
