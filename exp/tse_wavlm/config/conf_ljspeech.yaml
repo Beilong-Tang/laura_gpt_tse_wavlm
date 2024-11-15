@@ -1,0 +1,106 @@
+train_shape_file: ["/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/train/all/clean/shape.scp"]
+valid_shape_file: ["/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/dev/clean/shape.scp"]
+train_data_path_and_name_and_type: [
+    [
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/train/all/mix/all.scp",
+        "text",
+        "npy"
+    ],
+    [
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/train/all/clean/all.scp",
+        "codec",
+        "npy"
+    ],
+    [
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/train/all/aux/all.scp",
+        "aux",
+        "npy"
+    ]
+]
+valid_data_path_and_name_and_type: [
+    [
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/dev/mix/all.scp",
+        "text",
+        "npy"
+    ],
+    [
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/dev/clean/all.scp",
+        "codec",
+        "npy"
+    ],
+    [
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/dev/aux/all.scp",
+        "aux",
+        "npy"
+    ]
+]
+
+
+input_size: &input_size 1000
+input_dim: &input_dim 1024 # Wavlm Input Dimension
+kmeans_ckpt: &kmeans_ckpt /DKUdata/tangbl/wavlm_kmeans_hifi/ckpt/LibriSpeech_wavlm_k1000_L7.pt
+use_preprocessor: false
+audio_max_duration: 60
+codec_token_rate: 25
+seed: 1234
+
+
+## Model
+model:
+    type: exp.tse_wavlm.model.LauraGenModel
+    args:
+        kmeans_ckpt: *kmeans_ckpt
+        codec_sampling_ratio: 0.5
+        lsm_weight: 0.0
+        length_normalized_loss: true
+        predict_nq: 1
+        codec_conf:
+            codebook_size: *input_size # Output Vocabulary size - <EOS>
+            codebook_dim: *input_dim # Embedding Dimension
+        codec_lm_conf:
+            name: transformer
+            pos_enc: rel_pos
+            selfattention_layer_type: rel_selfattn
+            embed_unit: *input_dim # input dimension to the decoder LM
+            att_unit: *input_dim
+            head: 8
+            unit: 2048
+            layer: 6
+            dropout_rate: 0.1
+            pe_type: uni
+            bidirectional_inputs: true
+            codec_groups: 1
+
+## Optim
+optim: 
+    type: torch.optim.Adam
+    args:
+        lr: 1.0e-3
+scheduler: 
+    type: funcodec.schedulers.warmup_lr.WarmupLR
+    args:
+        warmup_steps: 10000
+
+### Training related
+batch_type: length
+batch_bins: 1280 # 4 gpu cards - 2560
+batch_size: 40 # This does not matter here
+sort_in_batch: descending
+sort_batch: descending
+num_workers: 8
+max_cache_size: 0.0
+max_cache_fd: 32
+train_dtype: float32
+grad_clip: 5
+
+
+best_field: loss
+best_save_type: descend
+max_ckpt: 1
+log_interval: 10
+epoch: 50
+
+## Add for argument type checking, Does not matter here
+allow_variable_data_keys: true
+drop_last: false
+fold_length: []
