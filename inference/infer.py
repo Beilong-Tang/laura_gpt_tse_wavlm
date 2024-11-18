@@ -4,133 +4,25 @@ import sys
 import argparse
 import logging
 import torch
-import librosa
-import numpy as np
 import tqdm
 
 sys.path.append(os.getcwd())
-
-from typing import Sequence
-from typing import Union
-from typing import Tuple
-from typing import Optional
 
 from funcodec.bin.text2audio_inference import Text2Audio, save_audio
 from funcodec.tasks.text2audio_generation import Text2AudioGenTask
 from utils import setup_logger, update_args, setup_seed, init, strip_ddp_state_dict, AttrDict
 
 from decoder.wavlm_kmeans_conformer import WavLMKmeansConformer
-from decoder.ref_conformer import ReferenceCrossAttention
 
+from blpytorch.models.wavlm.WavLMWrapper import WavLMWrapper as WavLM
+from blpytorch.data.target_dataset import TargetDataset
 
-
-
-def inference_func(
-    output_dir: Optional[str] = None,
-    batch_size: int = 1,
-    dtype: str = "float32",
-    device: str = "cuda",
-    logging: logging.Logger = logging.getLogger(),
-    num_workers: int = 0,
-    key_file: Optional[str] = None,
-    config_file: Optional[str] = "config.yaml",
-    model_file: Optional[str] = "model.pth",
-    model_tag: Optional[str] = None,
-    allow_variable_data_keys: bool = True,
-    streaming: bool = False,
-    **kwargs,
-):
-    """
-    copied from funcodec.bin.text2audio_inference.inference_func
-    """
-
-    # 2. Build model
-    model_kwargs = dict(
-        config_file=config_file,
-        model_file=model_file,
-        device=device,
-        dtype=dtype,
-        streaming=streaming,
-        **kwargs,
-    )
-    my_model = Text2Audio.from_pretrained(
-        model_tag=model_tag,
-        **model_kwargs,
-    )
-    my_model.model.eval()
-
-    def _forward(
-        data_path_and_name_and_type: Sequence[Tuple[str, str, str]] = None,
-        raw_inputs: Union[Tuple[str], Tuple[str, str, str]] = None,
-        output_dir_v2: Optional[str] = None,
-        param_dict: Optional[dict] = None,
-    ):
-        logging.info("param_dict: {}".format(param_dict))
-        if data_path_and_name_and_type is None and raw_inputs is not None:
-            # add additional parenthesis to keep the same data format as streaming_iterator
-            logging.info("infering on one audio data")
-            data_dict = dict(text=[raw_inputs[0]])
-            if len(raw_inputs) == 3:
-                data_dict["prompt_text"] = [raw_inputs[1]]
-                if isinstance(raw_inputs[2], str):
-                    data_dict["prompt_audio"] = [
-                        librosa.load(
-                            raw_inputs[2],
-                            sr=my_model.codec_model.model.quantizer.sampling_rate,
-                            mono=True,
-                            dtype=np.float32,
-                        )[0][np.newaxis, :]
-                    ]
-                else:
-                    data_dict["prompt_audio"] = [raw_inputs[2].squeeze()[None, :]]
-            loader = [(["utt1"], data_dict)]
-        else:
-            loader = Text2AudioGenTask.build_streaming_iterator(
-                data_path_and_name_and_type,
-                dtype=dtype,
-                batch_size=batch_size,
-                key_file=key_file,
-                num_workers=num_workers,
-                preprocess_fn=None,
-                collate_fn=Text2AudioGenTask.build_collate_fn(
-                    my_model.model_args, False, raw_sequence=("text", "prompt_text")
-                ),
-                allow_variable_data_keys=allow_variable_data_keys,
-                inference=True,
-            )
-
-        output_path = output_dir_v2 if output_dir_v2 is not None else output_dir
-        if output_path is not None:
-            os.makedirs(output_path, exist_ok=True)
-        result_list = []
-
-        for keys, data in loader:
-            key = keys[0]
-            logging.info(f"generating {key}")
-            model_inputs = [data["text"][0]]
-            for input_key in ["prompt_text", "prompt_audio"]:
-                if input_key in data:
-                    model_inputs.append(data[input_key][0])
-
-            ret_val, _ = my_model(*model_inputs)
-            item = {"key": key, "value": ret_val}
-            if output_path is not None:
-                for suffix, wave in ret_val.items():
-                    file_name = key.replace(".wav", "") + "_" + suffix + ".wav"
-                    save_path = os.path.join(output_path, file_name)
-                    save_audio(
-                        wave[0],
-                        save_path,
-                        rescale=True,
-                        sample_rate=my_model.codec_model.model.quantizer.sampling_rate,
-                    )
-            else:
-                result_list.append(item)
-        logging.info("inferencing is done!!")
-
-        return result_list
-
-    return _forward
+# Function to partition an IterableDataset for distributed processing
+def partition_iterable_dataloader(dataloader, rank, world_size):
+    for idx, batch in enumerate(dataloader):
+        # Only process the batches corresponding to this rank
+        if idx % world_size == rank:
+            yield batch
 
 @torch.no_grad()
 def inference(args: argparse.Namespace):
@@ -144,6 +36,8 @@ def inference(args: argparse.Namespace):
     model.cuda()
     model.eval()
     l.info("model successfully intialized")
+    wavlm = WavLM(ckpt_path= args.wavlm_path)
+    wavlm.cuda()
     ## load decoder:
     if args.decoder is not None:
         d_conf = args.decoder
@@ -166,55 +60,37 @@ def inference(args: argparse.Namespace):
         decoder.cuda()
         decoder.eval()
         pass
-    ## init data
-    ## Convert args.data_path_and_name_and_type to a list of tuples:
-    if len(args.data_path_and_name_and_type) == 1:
-        args.data_path_and_name_and_type = args.data_path_and_name_and_type[0]
-    else:
-        res = []
-        for path, name, _type in args.data_path_and_name_and_type:
-            res.append((path, name, _type))
-        print(res)
-        args.data_path_and_name_and_type = res
-    loader = Text2AudioGenTask.build_streaming_iterator(
-        args.data_path_and_name_and_type,
-        dtype="float32",
-        batch_size=1,
-        key_file=None,
-        num_workers=0,
-        preprocess_fn=None,
-        collate_fn=Text2AudioGenTask.build_collate_fn(
-            None, False, raw_sequence=("text", "prompt_text", "aux")
-        ),
-        allow_variable_data_keys=True,
-        inference=True,
-    )
+
+    test_data = TargetDataset(mix_path = args.data['mix_path'], 
+                              regi_path= args.data['regi_path'],
+                              clean_path = args.data['clean_path'],
+                              rank = -1, 
+                              mix_length= None, 
+                              regi_length = None, 
+                              _type = "audio")
+
     l.info("data initialized successfully")
-    for keys, data in tqdm.tqdm(loader):
+    for mix, clean, regi, mix_path, clean_path, regi_path in tqdm.tqdm(test_data):
         torch.cuda.empty_cache()
-        key = keys[0]
-        logging.info(f"generating {key}")
-        model_inputs = [data["text"][0], data['aux'][0]]
-        # for input_key in ["prompt_text", "prompt_audio"]:
-        #     if input_key in data:
-        #         model_inputs.append(data[input_key][0])
-        for i, e in enumerate(model_inputs):
-            model_inputs[i] = torch.from_numpy(e).cuda()
-        # l.info(f"model_inputs: {model_inputs}")
-        # l.info(f"model_inputs shape: {model_inputs}")
-        # TODO: change this in the future
-        continual = model.kmeans(model_inputs[-1].unsqueeze(0)).squeeze(0).unsqueeze(-1).tolist() # list [T, 1]
-        ret_val = model.decode_codec(*model_inputs, continual = continual) # [1, T, 1]
+        mix, clean, regi = mix.cuda(), clean.cuda(), regi.cuda() # [T]
+        mix, clean, regi = mix.unsqueeze(0), clean.unsqueeze(0), regi.unsqueeze(0) # [1,T]
+        regi_mix = wavlm(torch.cat([regi, clean, regi], dim = 1)) #[1, T' + T + T', E]
+        regi_mix = regi_mix[:,: regi_mix.size(1) - regi.size(1)].unsqueeze(0) # [T' + T, E]
+        regi = wavlm(regi) # [1, T, E]
+        base_name = os.path.basename(mix_path)
+        logging.info(f"generating {base_name}")
+        continual = model.kmeans(regi).squeeze(0).unsqueeze(-1).tolist() # list [T, 1]
+        ret_val = model.decode_codec(text =regi_mix , aux = None, continual = continual) # [1, T, 1]
         if ret_val.size(1) ==0:
-            print(f"not generating audio for ret_val {key}")
+            print(f"not generating audio for ret_val {base_name}")
             continue
         ret_val = ret_val.squeeze(-1) # [1,T]
         l.info(f"ret_val: {ret_val.shape}")
         if args.decoder is not None:
             audio = decoder.inference(ret_val) #[1,T']
         else:
-            audio = decoder.recon_audio(model.kmeans.emb(ret_val), model_inputs[-1].unsqueeze(0))
-        save_path = os.path.join(args.output_dir, key+".wav")
+            audio = decoder.recon_audio(model.kmeans.emb(ret_val), regi)
+        save_path = os.path.join(args.output_dir, base_name)
         save_audio(audio, save_path, 16000, rescale= True)
     l.info("inferencing is done!")
 
@@ -229,6 +105,7 @@ def main(args: argparse.Namespace):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_file", type=str)
+    parser.add_argument("--wavlm_path", type=str)
     parser.add_argument("--default_config", type=str)
     parser.add_argument("--model_file", type=str)
     parser.add_argument("--output_dir", type=str)
