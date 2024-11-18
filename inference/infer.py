@@ -22,6 +22,7 @@ from utils import (
 from blpytorch.models.wavlm.WavLMWrapper import WavLMWrapper as WavLM
 from blpytorch.data.target_dataset import TargetDataset
 from blpytorch.utils.init import init
+import torch.multiprocessing as mp
 
 
 # Function to partition an IterableDataset for distributed processing
@@ -120,15 +121,21 @@ def main(args: argparse.Namespace):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_file", type=str)
-    parser.add_argument("--wavlm_path", type=str)
     parser.add_argument("--default_config", type=str)
     parser.add_argument("--model_file", type=str)
     parser.add_argument("--output_dir", type=str)
     parser.add_argument("--raw_inputs", nargs="*", default=None, type=str)
     parser.add_argument("--device", default="cuda:0", type=str)
+    parser.add_argument(
+        "--num_proc", type=int, default=4, help="total number of procedures"
+    )
+    parser.add_argument(
+        "--gpus", nargs="+", default=["cuda:0", "cuda:1", "cuda:2", "cuda:3"]
+    )
     args = parser.parse_args()
-    torch.cuda.set_device(args.device)
     update_args(args, args.config_file)
     update_args(args, args.default_config)
+    if args.num_proc > 1:
+        mp.spawn(main, args=(args,), nprocs=)
     main(args)
     pass
