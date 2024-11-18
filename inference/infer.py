@@ -8,8 +8,7 @@ import tqdm
 
 sys.path.append(os.getcwd())
 
-from funcodec.bin.text2audio_inference import Text2Audio, save_audio
-from funcodec.tasks.text2audio_generation import Text2AudioGenTask
+from funcodec.bin.text2audio_inference import save_audio
 from utils import (
     setup_logger,
     update_args,

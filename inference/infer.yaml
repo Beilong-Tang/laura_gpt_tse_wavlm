@@ -1,7 +1,7 @@
 data:
   mix_path: /public/home/qinxy/bltang/data/LibriMix/Libri2Mix/wav16k/min/lists/test/mix.scp
   regi_path: /public/home/qinxy/bltang/data/LibriMix/Libri2Mix/wav16k/min/lists/test/aux_s1.scp
-  clean_path: /public/home/qinxy/bltang/data/LibriMix/Libri2Mix/wav16k/min/lists/test/s1.scp
+  clean_path: /public/home/qinxy/bltang/data/LibriMix/Libri2Mix/wav16k/min/lists/test/s1.scp # Libri2Mix Test set
 
 sampling: 25
 beam_size: 1
