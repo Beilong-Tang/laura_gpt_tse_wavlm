@@ -131,7 +131,7 @@ if __name__ == "__main__":
     parser.add_argument("--model_file", type=str)
     parser.add_argument("--output_dir", type=str)
     parser.add_argument("--raw_inputs", nargs="*", default=None, type=str)
-    parser.add_argument("--device", default="cuda:4", type=str)
+    parser.add_argument("--device", default="cuda:0", type=str)
     args = parser.parse_args()
     torch.cuda.set_device(args.device)
     update_args(args, args.config_file)
