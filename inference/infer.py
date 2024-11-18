@@ -18,10 +18,10 @@ from utils import (
     AttrDict,
 )
 
-from decoder.wavlm_kmeans_conformer import WavLMKmeansConformer
 
 from blpytorch.models.wavlm.WavLMWrapper import WavLMWrapper as WavLM
 from blpytorch.data.target_dataset import TargetDataset
+from blpytorch.utils.init import init
 
 
 # Function to partition an IterableDataset for distributed processing
@@ -48,15 +48,9 @@ def inference(args: argparse.Namespace):
     wavlm.cuda()
     ## load decoder:
     if args.decoder is not None:
-        d_conf = args.decoder
-        decoder = WavLMKmeansConformer(
-            kmeans_path=d_conf["kmeans_ckpt"],
-            kernel_size=d_conf["kernel_size"],
-            hifi_path=d_conf["hifi_path"],
-            hifi_config=d_conf["hifi_config"],
-        )
+        decoder = init(args.decoder)
         d_ckpt = strip_ddp_state_dict(
-            torch.load(d_conf["conformer_ckpt"])["model_state_dict"]
+            torch.load(args.decoder_ckpt)["model_state_dict"]
         )
         decoder.load_state_dict(d_ckpt, strict=False)
         decoder.cuda()

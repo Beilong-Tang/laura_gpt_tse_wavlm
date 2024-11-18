@@ -11,11 +11,11 @@ continual: 1 # No continual, where 1 stands for there is continual stuff
 
 seed: 1234
 
-## decoder related:
-decoder:
-  kmeans_ckpt: /DKUdata/tangbl/wavlm_kmeans_hifi/ckpt/LibriSpeech_wavlm_k1000_L7.pt
-  kernel_size: 3
-  conformer_ckpt: /DKUdata/tangbl/ml_framework_slurm/exp/conformer/conformer/ckpt/step_160000.pth
-  hifi_path: /DKUdata/tangbl/wavlm_kmeans_hifi/ckpt/g_02500000.pt
-  hifi_config: /DKUdata/tangbl/wavlm_kmeans_hifi/hifigan_config_v1_wavlm.json
-decoder_ckpt: /DKUdata/tangbl/ml_framework_slurm/exp/conformer_ref/ckpt/conf/best.pth
+decoder: 
+  type: decoder.wavlm_kmeans_conformer.WavLMKmeansConformer
+  args: 
+    kmeans_path: /public/home/qinxy/bltang/wavlm_kmeans_hifi/ckpt/LJSpeech/kmeans-cluster-1024-k_1024.pt
+    kernel_size: 3
+    hifi_path: /public/home/qinxy/bltang/hifi-gan/librispeech/g_02500000.pt
+    hifi_config: models/hifigan/config_v1_wavlm.json
+decoder_ckpt: /public/home/qinxy/bltang/wavlm_kmeans_hifi/ckpt/LJSpeech/ljspeech_k_1024.pt
