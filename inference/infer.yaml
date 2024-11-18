@@ -10,7 +10,7 @@ continual: 1 # No continual, where 1 stands for there is continual stuff
 
 
 seed: 1234
-
+wavlm_path: /public/home/qinxy/bltang/wavlm_large/wavlm_large_new/WavLM-Large.pt
 decoder: 
   type: decoder.wavlm_kmeans_conformer.WavLMKmeansConformer
   args: 
