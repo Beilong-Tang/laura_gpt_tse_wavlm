@@ -38,7 +38,7 @@ valid_data_path_and_name_and_type: [
 
 input_size: &input_size 1000
 input_dim: &input_dim 1024 # Wavlm Input Dimension
-kmeans_ckpt: &kmeans_ckpt /DKUdata/tangbl/wavlm_kmeans_hifi/ckpt/LibriSpeech_wavlm_k1000_L7.pt
+kmeans_ckpt: &kmeans_ckpt /DKUdata/tangbl/privacy/kmeans_wavlm/exp/LJSpeech/ckpt/k_1024/kmeans-cluster-1024-k_1024.pt
 use_preprocessor: false
 audio_max_duration: 60
 codec_token_rate: 25
