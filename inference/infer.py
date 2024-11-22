@@ -22,6 +22,8 @@ from utils import (
 from blpytorch.models.wavlm.WavLMWrapper import WavLMWrapper as WavLM
 from blpytorch.data.target_dataset import TargetDataset
 from blpytorch.utils.init import init
+import torch.multiprocessing as mp
+from blpytorch.utils.data import split_dataset
 
 
 # Function to partition an IterableDataset for distributed processing
@@ -114,7 +116,8 @@ def main(args: argparse.Namespace):
     logger = setup_logger(args, rank=0, out=False)
     args.logging = logger
     logger.info(args)
-    inference(args)
+    
+    # mp.spawn(inference(args)
 
 
 if __name__ == "__main__":
@@ -124,7 +127,10 @@ if __name__ == "__main__":
     parser.add_argument("--model_file", type=str)
     parser.add_argument("--output_dir", type=str)
     parser.add_argument("--raw_inputs", nargs="*", default=None, type=str)
-    parser.add_argument("--device", default="cuda:0", type=str)
+    parser.add_argument(
+        "--gpus", nargs="+", default=["cuda:0", "cuda:1", "cuda:2", "cuda:3"]
+    )
+    parser.add_argument("--num_proc", type=int, default=8)
     args = parser.parse_args()
     torch.cuda.set_device(args.device)
     update_args(args, args.config_file)
