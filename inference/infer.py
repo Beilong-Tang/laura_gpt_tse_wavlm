@@ -29,6 +29,7 @@ from blpytorch.utils.data import split_dataset
 @torch.no_grad()
 def inference(rank, args: argparse.Namespace):
     device = args.gpus[rank % len(args.gpus)]
+    print("device ", device)
     torch.cuda.set_device(device)
     l: logging.Logger = args.logging
     args = AttrDict(**vars(args))
