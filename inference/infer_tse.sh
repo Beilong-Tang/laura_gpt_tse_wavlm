@@ -26,7 +26,7 @@ module load compiler/rocm/dtk-23.04.1
 
 
 # Infer with LJSpeech K 1024
-python -u inference/infer.py --config_file exp/tse_wavlm/config/conf_ljspeech.yaml --model_file /DKUdata/tangbl/laura_gpt_tse/exp/tse_wavlm/ckpt/conf_ljspeech/best.pth --output_dir /DKUdata/tangbl/laura_gpt_tse/output/conf_ljspeech --default_config inference/infer_no_ref_decoder.yaml --gpus cuda:0 cuda:1 cudda:4 cuda:5 --num_procs 4  
+python -u inference/infer.py --config_file exp/tse_wavlm/config/conf_ljspeech.yaml --model_file /DKUdata/tangbl/laura_gpt_tse/exp/tse_wavlm/ckpt/conf_ljspeech/best.pth --output_dir /DKUdata/tangbl/laura_gpt_tse/output/conf_ljspeech --default_config inference/infer_no_ref_decoder.yaml --gpus cuda:0 cuda:1 cudda:4 cuda:5 --num_proc 4  
 
 ## Infer with auxilary audio
 # python -u inference/infer.py --config_file exp/tse_wavlm/config/conf.yaml --model_file /public/home/qinxy/bltang/laura_gpt_tse/exp/tse_wavlm/ckpt/laura_gpt_tse_ljspeech.pt --output_dir /public/home/qinxy/bltang/laura_gpt_tse/output/conf --default_config inference/infer.yaml --device cuda:0
