@@ -1,7 +1,11 @@
+# data:
+#   mix_path: /Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/test/mix/all.scp
+#   regi_path: /Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/test/aux/all.scp
+#   clean_path: /Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/test/clean/all.scp # Libri2Mix Test set
 data:
-  mix_path: /Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/test/mix/all.scp
-  regi_path: /Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/test/aux/all.scp
-  clean_path: /Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/test/clean/all.scp # Libri2Mix Test set
+  mix_path: /Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/lists/test/mix.scp
+  regi_path: /Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/lists/test/aux_s1.scp
+  clean_path: /Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/lists/test/s1.scp # Libri2Mix Test set
 sampling: 25
 beam_size: 1
 text_emb_model: Null # Does not matter if We use G2P phonazation
