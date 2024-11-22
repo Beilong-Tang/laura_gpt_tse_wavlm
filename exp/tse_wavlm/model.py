@@ -12,6 +12,7 @@ from funcodec.torch_utils.device_funcs import force_gatherable
 from funcodec.losses.label_smoothing_loss import LabelSmoothingLoss
 from copy import deepcopy
 from models.kmeans import KMeansQuantizer
+from blpytorch.utils.load_model import get_model_params
 
 class LauraGenModel(AbsESPnetModel):
     """
@@ -86,6 +87,7 @@ class LauraGenModel(AbsESPnetModel):
             reduction=False,
         )
         self.length_normalized_loss = length_normalized_loss
+        print(f"laura gen model params: {get_model_params(self)}")
 
     def build_codec_lm(self, conf: Dict):
         name = conf.pop("name")
