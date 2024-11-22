@@ -12,10 +12,12 @@ seed: 1234
 wavlm_path: /DKUdata/tangbl/wavlm/WavLM-Large.pt
 ## decoder related:
 decoder:
-  kmeans_ckpt: /DKUdata/tangbl/privacy/kmeans_wavlm/exp/LJSpeech/ckpt/k_1024/kmeans-cluster-1024-k_1024.pt
-  kernel_size: 3
-  ffn_dim: 2048
-  conformer_num_layers: 6
-  conformer_ckpt: /DKUdata/tangbl/privacy/kmeans_wavlm/exp/LJSpeech/ckpt/k_1024_backend/best.pth
-  hifi_path: /DKUdata/tangbl/wavlm_kmeans_hifi/ckpt/g_02500000.pt
-  hifi_config: /DKUdata/tangbl/wavlm_kmeans_hifi/hifigan_config_v1_wavlm.json
+  type: decoder.wavlm_kmeans_conformer.WavLMKmeansConformer
+  args:
+    kmeans_ckpt: /DKUdata/tangbl/privacy/kmeans_wavlm/exp/LJSpeech/ckpt/k_1024/kmeans-cluster-1024-k_1024.pt
+    kernel_size: 3
+    ffn_dim: 2048
+    conformer_num_layers: 6
+    hifi_path: /DKUdata/tangbl/wavlm_kmeans_hifi/ckpt/g_02500000.pt
+    hifi_config: /DKUdata/tangbl/wavlm_kmeans_hifi/hifigan_config_v1_wavlm.json
+decoder_ckpt: /DKUdata/tangbl/privacy/kmeans_wavlm/exp/LJSpeech/ckpt/k_1024_backend/best.pth
