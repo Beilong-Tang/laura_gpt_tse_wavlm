@@ -35,7 +35,9 @@ def partition_iterable_dataloader(dataloader, rank, world_size):
 
 
 @torch.no_grad()
-def inference(args: argparse.Namespace):
+def inference(rank, args: argparse.Namespace):
+    device = args.gpus[rank % len(args.gpus)]
+    torch.cuda.set_device(device)
     l: logging.Logger = args.logging
     args = AttrDict(**vars(args))
     os.makedirs(args.output_dir, exist_ok=True)
@@ -80,6 +82,7 @@ def inference(args: argparse.Namespace):
         regi_length=None,
         _type="audio",
     )
+    test_data = split_dataset(test_data, args.num_proc, rank)
 
     l.info("data initialized successfully")
     for mix, _, regi, mix_path, _, _ in tqdm.tqdm(test_data):
@@ -116,9 +119,7 @@ def main(args: argparse.Namespace):
     logger = setup_logger(args, rank=0, out=False)
     args.logging = logger
     logger.info(args)
-    
-    # mp.spawn(inference(args)
-
+    mp.spawn(inference, args=(args,), nprocs= args.num_proc)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -132,7 +133,6 @@ if __name__ == "__main__":
     )
     parser.add_argument("--num_proc", type=int, default=8)
     args = parser.parse_args()
-    torch.cuda.set_device(args.device)
     update_args(args, args.config_file)
     update_args(args, args.default_config)
     main(args)
