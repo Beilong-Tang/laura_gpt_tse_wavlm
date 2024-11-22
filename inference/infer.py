@@ -43,6 +43,7 @@ def inference(rank, args: argparse.Namespace):
     l.info("model successfully intialized")
     wavlm = WavLM(ckpt_path=args.wavlm_path)
     wavlm.cuda()
+    torch.cuda.empty_cache()
     ## load decoder:
     if args.decoder is not None:
         decoder = init(args.decoder)
