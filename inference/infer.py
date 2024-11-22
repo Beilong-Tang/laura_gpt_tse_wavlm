@@ -35,7 +35,7 @@ def inference(rank, args: argparse.Namespace):
     args = AttrDict(**vars(args))
     os.makedirs(args.output_dir, exist_ok=True)
     ## load model
-    ckpt = torch.load(args.model_file)
+    ckpt = torch.load(args.model_file, map_location="cpu")
     model: torch.nn.Module = init(args.model)
     model.load_state_dict(ckpt["model_state_dict"])
     model.cuda()
