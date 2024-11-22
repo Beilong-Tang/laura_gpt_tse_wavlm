@@ -1,7 +1,7 @@
 data:
-  mix_path: /public/home/qinxy/bltang/data/LibriMix/Libri2Mix/wav16k/min/lists/test/mix.scp
-  regi_path: /public/home/qinxy/bltang/data/LibriMix/Libri2Mix/wav16k/min/lists/test/aux_s1.scp
-  clean_path: /public/home/qinxy/bltang/data/LibriMix/Libri2Mix/wav16k/min/lists/test/s1.scp # Libri2Mix Test set
+  mix_path: /Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/lists/test/mix.scp
+  regi_path: /Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/lists/test/aux_s1.scp
+  clean_path: /Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/lists/test/s1.scp # Libri2Mix Test set
 sampling: 25
 beam_size: 1
 text_emb_model: Null # Does not matter if We use G2P phonazation
@@ -14,7 +14,7 @@ wavlm_path: /DKUdata/tangbl/wavlm/WavLM-Large.pt
 decoder:
   type: decoder.wavlm_kmeans_conformer.WavLMKmeansConformer
   args:
-    kmeans_ckpt: /DKUdata/tangbl/privacy/kmeans_wavlm/exp/LJSpeech/ckpt/k_1024/kmeans-cluster-1024-k_1024.pt
+    kmeans_path: /DKUdata/tangbl/privacy/kmeans_wavlm/exp/LJSpeech/ckpt/k_1024/kmeans-cluster-1024-k_1024.pt
     kernel_size: 3
     ffn_dim: 2048
     conformer_num_layers: 6
