@@ -497,6 +497,7 @@ class LauraGenModel(AbsESPnetModel):
             self,
             text: torch.Tensor,
             aux: torch.Tensor,
+            len_aux: None,
             text_lengths: torch.Tensor = None,
             aux_lengths: torch.Tensor = None,
             max_length: int = 30 * 25,
@@ -516,12 +517,15 @@ class LauraGenModel(AbsESPnetModel):
         text = text.unsqueeze(0) # [1, T, emb]
         if aux is not None:
             aux = aux.unsqueeze(0) # [1, T, emb]
+            aux_len = aux.size(1)
             text = torch.cat([aux, text], dim = 1)
+        else:
+            aux_len = len(continual)
         if text_lengths is None:
             text_lengths = torch.tensor([text.size(1)], device= text.device, dtype = torch.long)
         else:
             text_lengths = text_lengths + aux_lengths
-        
+
         device = text.device
         out_tokens = [] if continual is None else deepcopy(continual)
         sos_eos_emb = self.lm_embedding(torch.tensor([[self.sos_eos]], dtype=torch.int64, device=device)) # [1,1,emb]
@@ -560,7 +564,7 @@ class LauraGenModel(AbsESPnetModel):
         # remove eos token
         if torch.any(torch.tensor(out_tokens[-1], dtype=torch.int64) == self.codebook_size+self.sos_eos):
             out_tokens = out_tokens[:-1]
-        return torch.tensor([out_tokens], dtype=torch.int64, device=device)[:, aux.size(1):] # [1, T, n_q]
+        return torch.tensor([out_tokens], dtype=torch.int64, device=device)[:, aux_len:] # [1, T, n_q]
 
     def syn_audio(
             self,
