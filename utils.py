@@ -7,6 +7,8 @@ import numpy as np
 import torch
 import importlib
 from collections import OrderedDict
+from torch import nn
+from typing import Optional
 
 from argparse import Namespace
 
@@ -119,3 +121,33 @@ class AttrDict(Namespace):
             return super().__getattribute__(name)
         except AttributeError:
             return None
+
+def load_ckpt(
+    model: nn.Module, ckpt_path: Optional[str], device="cuda", strict=True, freeze=True
+):
+    model.to(device)
+    if device == "cuda":
+        model.cuda(device)
+    if ckpt_path:
+        ckpt = torch.load(ckpt_path, map_location=device)
+        state_dict = strip_ddp_state_dict(ckpt["model_state_dict"])
+        ### output missing part
+        # missing, _, _, msg = _find_mismatched_keys(model.state_dict(), state_dict)
+        # if missing:
+        #     print(msg)
+        model.load_state_dict(state_dict, strict=strict)
+    if freeze:
+        for p in model.parameters():
+            p.requires_grad = False
+    model.eval()
+    return model
+
+
+
+def make_path(file_path, is_dir=True):
+    if is_dir:
+        os.makedirs(file_path, exist_ok=True)
+    else:
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    return file_path
+

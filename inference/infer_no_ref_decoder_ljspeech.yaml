@@ -1,0 +1,29 @@
+data_path_and_name_and_type: [
+    [
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/test/mix/all.scp",
+        "text",
+        "npy"
+    ],
+    [
+        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/test/aux/all.scp",
+        "aux",
+        "npy"
+    ]
+  ]
+sampling: 25
+beam_size: 1
+text_emb_model: Null # Does not matter if We use G2P phonazation
+continual: 1 # No continual, where 1 stands for there is continual stuff
+
+
+seed: 1234
+
+## decoder related:
+decoder:
+  kmeans_ckpt: /DKUdata/tangbl/privacy/kmeans_wavlm/exp/LJSpeech/ckpt/k_1024/kmeans-cluster-1024-k_1024.pt
+  kernel_size: 3
+  ffn_dim: 2048
+  conformer_num_layers: 6
+  conformer_ckpt: /DKUdata/tangbl/privacy/kmeans_wavlm/exp/LJSpeech/ckpt/k_1024_backend/best.pth
+  hifi_path: /DKUdata/tangbl/wavlm_kmeans_hifi/ckpt/g_02500000.pt
+  hifi_config: /DKUdata/tangbl/wavlm_kmeans_hifi/hifigan_config_v1_wavlm.json
