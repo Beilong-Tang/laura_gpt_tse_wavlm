@@ -48,7 +48,7 @@ def inference(rank, args: argparse.Namespace):
     if args.decoder is not None:
         decoder = init(args.decoder)
         d_ckpt = strip_ddp_state_dict(
-            torch.load(args.decoder_ckpt)["model_state_dict"]
+            torch.load(args.decoder_ckpt, map_location="cpu")["model_state_dict"]
         )
         decoder.load_state_dict(d_ckpt, strict=False)
         decoder.cuda()
