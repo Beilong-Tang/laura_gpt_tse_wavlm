@@ -84,7 +84,7 @@ def inference(rank, args: argparse.Namespace):
         mix, regi = mix.cuda(), regi.cuda()  # [T]
         mix, regi = mix.unsqueeze(0), regi.unsqueeze(0)  # [1,T]
         regi_mix = wavlm(torch.cat([regi, mix, regi], dim=1))  # [1, T' + T + T', E]
-        regi_mix = regi_mix[:, : regi_mix.size(1) - regi.size(1)].unsqueeze(
+        regi_mix = regi_mix[:, : regi_mix.size(1) - regi.size(1)].squeeze(
             0
         )  # [T' + T, E]
         regi = wavlm(regi)  # [1, T, E]
