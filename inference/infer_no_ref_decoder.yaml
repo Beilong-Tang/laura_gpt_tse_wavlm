@@ -1,15 +1,8 @@
-data_path_and_name_and_type: [
-    [
-        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/test/mix/all.scp",
-        "text",
-        "npy"
-    ],
-    [
-        "/Netdata/2021/zb/data/LibriMix/Libri2Mix/wav16k/min/wavlm_6/test/aux/all.scp",
-        "aux",
-        "npy"
-    ]
-  ]
+data:
+  mix_path: /public/home/qinxy/bltang/data/LibriMix/Libri2Mix/wav16k/min/lists/test/mix.scp
+  regi_path: /public/home/qinxy/bltang/data/LibriMix/Libri2Mix/wav16k/min/lists/test/aux_s1.scp
+  clean_path: /public/home/qinxy/bltang/data/LibriMix/Libri2Mix/wav16k/min/lists/test/s1.scp # Libri2Mix Test set
+
 sampling: 25
 beam_size: 1
 text_emb_model: Null # Does not matter if We use G2P phonazation
@@ -17,7 +10,7 @@ continual: 1 # No continual, where 1 stands for there is continual stuff
 
 
 seed: 1234
-
+wavlm_path: /public/home/qinxy/bltang/wavlm_large/wavlm_large_new/WavLM-Large.pt
 ## decoder related:
 decoder:
   kmeans_ckpt: /DKUdata/tangbl/wavlm_kmeans_hifi/ckpt/LibriSpeech_wavlm_k1000_L7.pt

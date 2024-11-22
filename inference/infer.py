@@ -26,14 +26,6 @@ import torch.multiprocessing as mp
 from blpytorch.utils.data import split_dataset
 
 
-# Function to partition an IterableDataset for distributed processing
-def partition_iterable_dataloader(dataloader, rank, world_size):
-    for idx, batch in enumerate(dataloader):
-        # Only process the batches corresponding to this rank
-        if idx % world_size == rank:
-            yield batch
-
-
 @torch.no_grad()
 def inference(rank, args: argparse.Namespace):
     device = args.gpus[rank % len(args.gpus)]
