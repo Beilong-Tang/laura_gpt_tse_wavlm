@@ -497,7 +497,6 @@ class LauraGenModel(AbsESPnetModel):
             self,
             text: torch.Tensor,
             aux: torch.Tensor,
-            len_aux: None,
             text_lengths: torch.Tensor = None,
             aux_lengths: torch.Tensor = None,
             max_length: int = 30 * 25,
