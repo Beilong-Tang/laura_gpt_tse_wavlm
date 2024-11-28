@@ -1,12 +1,6 @@
-# Laura GPT TSE
+# LauraGPT WavLM
 
-## Experiment 1.
+This repository contains the lauraGPT model for TSE and SE using WavLM Features. 
 
-<Transcript> / <Regi> / <Mixture>
-
-
-
-## TODO:
-1. Extract the WavLM Continuous Features for two speakers
-2. Run the tse experiment with and without aux speech
-3. Check audio conversion
+## Pre-requisite
+1. Install [Funcodec](https://github.com/modelscope/FunCodec).
