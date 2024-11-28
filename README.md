@@ -2,7 +2,7 @@
 
 [![Demo](https://img.shields.io/badge/Demo-green?&logo=youtube)](https://beilong-tang.github.io/LauraGPT_WavLM_TSE.demo/)
 
-:warning: This repository is under construction, and it now contains my personal code for operating on my server. I will clean it up after finishing my experiments. But it should contain the key codes for building a LauraGPT TSE Model now. :warning:  
+:warning: This repository is under construction, and it now contains my personal code for operating on my server. I will clean it up after finishing my experiments. But it should contain the key codes for building a LauraGPT TSE Model now.
 
 This repository contains the lauraGPT model for TSE and SE using WavLM Features. 
 
