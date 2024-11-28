@@ -10,8 +10,24 @@ To check the model detail, please visit [here](https://beilong-tang.github.io/La
 
 ## Pre-requisite
 1. Install [Funcodec](https://github.com/modelscope/FunCodec).
-2. Follow `scripts` to extract the WavLM Features. 
+2. Follow `scripts/run.sh` to extract WavLM Features for SE tasks.
+3. Follow `scripts/run_tse.sh` to extract WavLM Features for TSE tasks.
 
 ## Run
 
 The model for SE is in `exp/se_wavlm` and the model for TSE is in `exp/tse_wavlm` 
+
+### Speech Enhancement
+To run a __SE__ task using default config, do
+
+```shell
+python -u train.py --config exp/se_wavlm/config/conf.yaml --gpus 0,1,2,3 --log log/se_wavlm/conf
+```
+
+### Target Speaker Extraction
+To run a __TSE__ task using default config, do
+
+```shell
+python -u train.py --config exp/tse_wavlm/config/conf.yaml --gpus 0,1,2,3 --log ./log/tse_wavlm
+```
+
